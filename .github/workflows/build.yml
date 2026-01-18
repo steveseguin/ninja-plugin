@@ -9,7 +9,8 @@ on:
 env:
   PLUGIN_NAME: obs-vdoninja
   OBS_VERSION: 32.0.4
-  OBS_SOURCE_REF: v32.0.4
+  OBS_SOURCE_REF: 32.0.4
+  OBS_SOURCE_TAG: 32.0.4
   OBS_VERSION_WIN: "32.0.4"
   OBS_VERSION_WIN_ZIP: "OBS-Studio-32.0.4-Windows-x64.zip"
 
@@ -41,6 +42,7 @@ jobs:
         run: |
           git clone --depth 1 --branch ${{ env.OBS_SOURCE_REF }} --recurse-submodules https://github.com/obsproject/obs-studio.git obs-studio
           cd obs-studio
+          git checkout "refs/tags/${{ env.OBS_SOURCE_TAG }}" || git checkout ${{ env.OBS_SOURCE_TAG }}
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
             ccache \
@@ -179,6 +181,7 @@ jobs:
         run: |
           git clone --depth 1 --branch ${{ env.OBS_SOURCE_REF }} --recurse-submodules https://github.com/obsproject/obs-studio.git obs-studio
           cd obs-studio
+          git checkout "refs/tags/${{ env.OBS_SOURCE_TAG }}" || git checkout ${{ env.OBS_SOURCE_TAG }}
           cmake --preset macos-ci -B build_macos \
             -DCMAKE_OSX_ARCHITECTURES=${{ matrix.arch }} \
             -DENABLE_BROWSER=OFF \
@@ -299,6 +302,7 @@ jobs:
         run: |
           git clone --depth 1 --branch ${{ env.OBS_SOURCE_REF }} --recurse-submodules https://github.com/obsproject/obs-studio.git obs-studio
           cd obs-studio
+          git checkout "refs/tags/${{ env.OBS_SOURCE_TAG }}"; if ($LASTEXITCODE -ne 0) { git checkout ${{ env.OBS_SOURCE_TAG }} }
           cmake --preset windows-ci-x64 -B build_x64 `
             "-DENABLE_BROWSER=OFF" `
             "-DENABLE_UI=OFF" `
