@@ -115,15 +115,15 @@ obs_source_info vdoninja_source_info = {
     .get_name = vdoninja_source_getname,
     .create = vdoninja_source_create,
     .destroy = vdoninja_source_destroy,
+    .get_width = vdoninja_source_get_width,
+    .get_height = vdoninja_source_get_height,
+    .get_defaults = vdoninja_source_defaults,
+    .get_properties = vdoninja_source_properties,
     .update = vdoninja_source_update,
     .activate = vdoninja_source_activate,
     .deactivate = vdoninja_source_deactivate,
     .video_tick = vdoninja_source_video_tick,
     .video_render = vdoninja_source_video_render,
-    .get_width = vdoninja_source_get_width,
-    .get_height = vdoninja_source_get_height,
-    .get_defaults = vdoninja_source_defaults,
-    .get_properties = vdoninja_source_properties,
 };
 
 // Implementation
@@ -336,11 +336,8 @@ void VDONinjaSource::onVideoTrack(const std::string &uuid, std::shared_ptr<rtc::
 	logInfo("Received video track from %s", uuid.c_str());
 
 	track->onMessage(
-	    [this](auto data) {
-		    if (std::holds_alternative<rtc::binary>(data)) {
-			    auto &binary = std::get<rtc::binary>(data);
-			    processVideoData(reinterpret_cast<const uint8_t *>(binary.data()), binary.size());
-		    }
+	    [this](rtc::binary data) {
+		    processVideoData(reinterpret_cast<const uint8_t *>(data.data()), data.size());
 	    },
 	    nullptr);
 }
@@ -350,11 +347,8 @@ void VDONinjaSource::onAudioTrack(const std::string &uuid, std::shared_ptr<rtc::
 	logInfo("Received audio track from %s", uuid.c_str());
 
 	track->onMessage(
-	    [this](auto data) {
-		    if (std::holds_alternative<rtc::binary>(data)) {
-			    auto &binary = std::get<rtc::binary>(data);
-			    processAudioData(reinterpret_cast<const uint8_t *>(binary.data()), binary.size());
-		    }
+	    [this](rtc::binary data) {
+		    processAudioData(reinterpret_cast<const uint8_t *>(data.data()), data.size());
 	    },
 	    nullptr);
 }

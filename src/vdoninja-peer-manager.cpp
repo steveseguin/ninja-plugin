@@ -78,8 +78,7 @@ rtc::Configuration VDONinjaPeerManager::getRtcConfig() const
 
 	// Add custom ICE servers
 	for (const auto &server : iceServers_) {
-		rtc::IceServer iceServer;
-		iceServer.hostname = server.urls;
+		rtc::IceServer iceServer(server.urls, "");
 		if (!server.username.empty()) {
 			iceServer.username = server.username;
 			iceServer.password = server.credential;
@@ -271,11 +270,13 @@ void VDONinjaPeerManager::setupPeerConnectionCallbacks(std::shared_ptr<PeerInfo>
 		if (!peer)
 			return;
 
-		// Determine track type from description
 		auto desc = track->description();
 		TrackType type = TrackType::Video;
-		if (desc.find("audio") != std::string::npos) {
+		if (desc.type() == "audio") {
 			type = TrackType::Audio;
+			peer->audioTrack = track;
+		} else {
+			peer->videoTrack = track;
 		}
 
 		logInfo("Received %s track from %s", type == TrackType::Audio ? "audio" : "video", uuid.c_str());
@@ -332,13 +333,13 @@ void VDONinjaPeerManager::setupPublisherTracks(std::shared_ptr<PeerInfo> peer)
 	}
 
 	videoDesc.addSSRC(videoSsrc_, "video-stream");
-	auto videoTrack = peer->pc->addTrack(videoDesc);
+	peer->videoTrack = peer->pc->addTrack(videoDesc);
 
 	// Set up audio track
 	rtc::Description::Audio audioDesc("audio", rtc::Description::Direction::SendOnly);
 	audioDesc.addOpusCodec(111);
 	audioDesc.addSSRC(audioSsrc_, "audio-stream");
-	auto audioTrack = peer->pc->addTrack(audioDesc);
+	peer->audioTrack = peer->pc->addTrack(audioDesc);
 
 	// Create data channel if enabled
 	if (enableDataChannel_) {
@@ -488,42 +489,40 @@ void VDONinjaPeerManager::sendAudioFrame(const uint8_t *data, size_t size, uint3
 		// The actual RTP packetization would be more complex
 		// This is a simplified version
 		try {
-			auto tracks = peer->pc->tracks();
-			for (auto &track : tracks) {
-				auto desc = track->description();
-				if (desc.find("audio") != std::string::npos) {
-					// Create RTP packet (simplified)
-					std::vector<uint8_t> rtpPacket;
-					rtpPacket.reserve(12 + size);
-
-					// RTP header
-					rtpPacket.push_back(0x80); // V=2, P=0, X=0, CC=0
-					rtpPacket.push_back(111);  // PT=111 (Opus), M=0
-					rtpPacket.push_back((audioSeq_ >> 8) & 0xFF);
-					rtpPacket.push_back(audioSeq_ & 0xFF);
-					audioSeq_++;
-
-					// Timestamp
-					uint32_t ts = timestamp ? timestamp : audioTimestamp_;
-					rtpPacket.push_back((ts >> 24) & 0xFF);
-					rtpPacket.push_back((ts >> 16) & 0xFF);
-					rtpPacket.push_back((ts >> 8) & 0xFF);
-					rtpPacket.push_back(ts & 0xFF);
-					audioTimestamp_ = ts + 960; // 48kHz, 20ms frames
-
-					// SSRC
-					rtpPacket.push_back((audioSsrc_ >> 24) & 0xFF);
-					rtpPacket.push_back((audioSsrc_ >> 16) & 0xFF);
-					rtpPacket.push_back((audioSsrc_ >> 8) & 0xFF);
-					rtpPacket.push_back(audioSsrc_ & 0xFF);
-
-					// Payload
-					rtpPacket.insert(rtpPacket.end(), data, data + size);
-
-					track->send(reinterpret_cast<const std::byte *>(rtpPacket.data()), rtpPacket.size());
-					break;
-				}
+			auto track = peer->audioTrack;
+			if (!track) {
+				continue;
 			}
+
+			// Create RTP packet (simplified)
+			std::vector<uint8_t> rtpPacket;
+			rtpPacket.reserve(12 + size);
+
+			// RTP header
+			rtpPacket.push_back(0x80); // V=2, P=0, X=0, CC=0
+			rtpPacket.push_back(111);  // PT=111 (Opus), M=0
+			rtpPacket.push_back((audioSeq_ >> 8) & 0xFF);
+			rtpPacket.push_back(audioSeq_ & 0xFF);
+			audioSeq_++;
+
+			// Timestamp
+			uint32_t ts = timestamp ? timestamp : audioTimestamp_;
+			rtpPacket.push_back((ts >> 24) & 0xFF);
+			rtpPacket.push_back((ts >> 16) & 0xFF);
+			rtpPacket.push_back((ts >> 8) & 0xFF);
+			rtpPacket.push_back(ts & 0xFF);
+			audioTimestamp_ = ts + 960; // 48kHz, 20ms frames
+
+			// SSRC
+			rtpPacket.push_back((audioSsrc_ >> 24) & 0xFF);
+			rtpPacket.push_back((audioSsrc_ >> 16) & 0xFF);
+			rtpPacket.push_back((audioSsrc_ >> 8) & 0xFF);
+			rtpPacket.push_back(audioSsrc_ & 0xFF);
+
+			// Payload
+			rtpPacket.insert(rtpPacket.end(), data, data + size);
+
+			track->send(reinterpret_cast<const std::byte *>(rtpPacket.data()), rtpPacket.size());
 		} catch (const std::exception &e) {
 			logError("Failed to send audio to %s: %s", pair.first.c_str(), e.what());
 		}
@@ -544,43 +543,41 @@ void VDONinjaPeerManager::sendVideoFrame(const uint8_t *data, size_t size, uint3
 		}
 
 		try {
-			auto tracks = peer->pc->tracks();
-			for (auto &track : tracks) {
-				auto desc = track->description();
-				if (desc.find("video") != std::string::npos) {
-					// Create RTP packet (simplified - real impl needs fragmentation for large
-					// frames)
-					std::vector<uint8_t> rtpPacket;
-					rtpPacket.reserve(12 + size);
-
-					// RTP header
-					rtpPacket.push_back(0x80);                        // V=2, P=0, X=0, CC=0
-					rtpPacket.push_back(keyframe ? (96 | 0x80) : 96); // PT=96, M=1 for keyframe
-					rtpPacket.push_back((videoSeq_ >> 8) & 0xFF);
-					rtpPacket.push_back(videoSeq_ & 0xFF);
-					videoSeq_++;
-
-					// Timestamp
-					uint32_t ts = timestamp ? timestamp : videoTimestamp_;
-					rtpPacket.push_back((ts >> 24) & 0xFF);
-					rtpPacket.push_back((ts >> 16) & 0xFF);
-					rtpPacket.push_back((ts >> 8) & 0xFF);
-					rtpPacket.push_back(ts & 0xFF);
-					videoTimestamp_ = ts + 3000; // 90kHz clock, ~30fps
-
-					// SSRC
-					rtpPacket.push_back((videoSsrc_ >> 24) & 0xFF);
-					rtpPacket.push_back((videoSsrc_ >> 16) & 0xFF);
-					rtpPacket.push_back((videoSsrc_ >> 8) & 0xFF);
-					rtpPacket.push_back(videoSsrc_ & 0xFF);
-
-					// Payload
-					rtpPacket.insert(rtpPacket.end(), data, data + size);
-
-					track->send(reinterpret_cast<const std::byte *>(rtpPacket.data()), rtpPacket.size());
-					break;
-				}
+			auto track = peer->videoTrack;
+			if (!track) {
+				continue;
 			}
+
+			// Create RTP packet (simplified - real impl needs fragmentation for large
+			// frames)
+			std::vector<uint8_t> rtpPacket;
+			rtpPacket.reserve(12 + size);
+
+			// RTP header
+			rtpPacket.push_back(0x80);                        // V=2, P=0, X=0, CC=0
+			rtpPacket.push_back(keyframe ? (96 | 0x80) : 96); // PT=96, M=1 for keyframe
+			rtpPacket.push_back((videoSeq_ >> 8) & 0xFF);
+			rtpPacket.push_back(videoSeq_ & 0xFF);
+			videoSeq_++;
+
+			// Timestamp
+			uint32_t ts = timestamp ? timestamp : videoTimestamp_;
+			rtpPacket.push_back((ts >> 24) & 0xFF);
+			rtpPacket.push_back((ts >> 16) & 0xFF);
+			rtpPacket.push_back((ts >> 8) & 0xFF);
+			rtpPacket.push_back(ts & 0xFF);
+			videoTimestamp_ = ts + 3000; // 90kHz clock, ~30fps
+
+			// SSRC
+			rtpPacket.push_back((videoSsrc_ >> 24) & 0xFF);
+			rtpPacket.push_back((videoSsrc_ >> 16) & 0xFF);
+			rtpPacket.push_back((videoSsrc_ >> 8) & 0xFF);
+			rtpPacket.push_back(videoSsrc_ & 0xFF);
+
+			// Payload
+			rtpPacket.insert(rtpPacket.end(), data, data + size);
+
+			track->send(reinterpret_cast<const std::byte *>(rtpPacket.data()), rtpPacket.size());
 		} catch (const std::exception &e) {
 			logError("Failed to send video to %s: %s", pair.first.c_str(), e.what());
 		}

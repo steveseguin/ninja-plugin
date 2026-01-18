@@ -9,6 +9,7 @@ on:
 env:
   PLUGIN_NAME: obs-vdoninja
   OBS_VERSION: 30.0.0
+  OBS_VERSION_WIN: 30.0
 
 jobs:
   build-linux:
@@ -30,12 +31,17 @@ jobs:
             ninja-build \
             pkg-config \
             libssl-dev \
-            libobs-dev \
             libpthread-stubs0-dev \
             qtbase5-dev \
             libqt5svg5-dev \
             libcurl4-openssl-dev \
             libjsoncpp-dev
+
+      - name: Download OBS SDK
+        run: |
+          curl -L -o obs-studio.deb \
+            "https://github.com/obsproject/obs-studio/releases/download/${{ env.OBS_VERSION }}/obs-studio_${{ env.OBS_VERSION }}-0obsproject1.jammy_amd64.deb"
+          dpkg -x obs-studio.deb obs-sdk
 
       - name: Build libdatachannel
         run: |
@@ -57,7 +63,7 @@ jobs:
           cmake -B build -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_INSTALL_PREFIX=/usr \
-            -DCMAKE_PREFIX_PATH="/usr/local"
+            -DCMAKE_PREFIX_PATH="/usr/local;${{ github.workspace }}/obs-sdk/usr"
 
       - name: Build Plugin
         run: cmake --build build
@@ -93,12 +99,26 @@ jobs:
 
       - name: Install OBS
         run: |
-          # Download OBS SDK
+          if [ "${{ matrix.arch }}" = "arm64" ]; then
+            obs_dmg="OBS-Studio-${{ env.OBS_VERSION }}-macOS-Apple.dmg"
+          else
+            obs_dmg="OBS-Studio-${{ env.OBS_VERSION }}-macOS-Intel.dmg"
+          fi
           curl -L -o obs-studio.dmg \
-            "https://github.com/obsproject/obs-studio/releases/download/${{ env.OBS_VERSION }}/OBS-Studio-${{ env.OBS_VERSION }}-macOS-Apple.dmg"
+            "https://github.com/obsproject/obs-studio/releases/download/${{ env.OBS_VERSION }}/${obs_dmg}"
           hdiutil attach obs-studio.dmg
-          sudo cp -R "/Volumes/OBS/OBS.app" /Applications/
-          hdiutil detach "/Volumes/OBS"
+          obs_volume=$(ls /Volumes | grep -m 1 "OBS" || true)
+          sudo cp -R "/Volumes/${obs_volume}/OBS.app" /Applications/
+          hdiutil detach "/Volumes/${obs_volume}"
+
+      - name: Prepare OBS SDK
+        run: |
+          OBS_APP="/Applications/OBS.app"
+          mkdir -p obs-sdk/include obs-sdk/lib
+          cp -R "${OBS_APP}/Contents/Frameworks/obs.framework/Headers" obs-sdk/include/obs
+          cp -R "${OBS_APP}/Contents/Frameworks/obs-frontend-api.framework/Headers" obs-sdk/include/obs-frontend-api
+          cp -R "${OBS_APP}/Contents/Frameworks/obs.framework/obs" obs-sdk/lib/libobs.dylib
+          cp -R "${OBS_APP}/Contents/Frameworks/obs-frontend-api.framework/obs-frontend-api" obs-sdk/lib/libobs-frontend-api.dylib
 
       - name: Build libdatachannel
         run: |
@@ -122,8 +142,8 @@ jobs:
           cmake -B build -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_OSX_ARCHITECTURES=${{ matrix.arch }} \
-            -DCMAKE_PREFIX_PATH="${{ github.workspace }}/deps;$(brew --prefix qt@5);$(brew --prefix openssl@3)" \
-            -DOBS_INCLUDE_DIRS="/Applications/OBS.app/Contents/Frameworks/obs.framework/Headers" \
+            -DCMAKE_PREFIX_PATH="${{ github.workspace }}/deps;${{ github.workspace }}/obs-sdk;$(brew --prefix qt@5);$(brew --prefix openssl@3)" \
+            -DOBS_INCLUDE_DIRS="${{ github.workspace }}/obs-sdk/include/obs" \
             -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0
 
       - name: Build Plugin
@@ -208,8 +228,9 @@ jobs:
 
       - name: Download OBS SDK
         run: |
-          Invoke-WebRequest -Uri "https://github.com/obsproject/obs-studio/releases/download/${{ env.OBS_VERSION }}/OBS-Studio-${{ env.OBS_VERSION }}-Windows.zip" -OutFile "obs-sdk.zip"
+          Invoke-WebRequest -Uri "https://github.com/obsproject/obs-studio/releases/download/${{ env.OBS_VERSION }}/OBS-Studio-${{ env.OBS_VERSION_WIN }}.zip" -OutFile "obs-sdk.zip"
           Expand-Archive -Path "obs-sdk.zip" -DestinationPath "obs-sdk"
+          Copy-Item "obs-sdk\obs-studio\sdk\*" -Destination "obs-sdk" -Recurse -Force
 
       - name: Build libdatachannel
         run: |

@@ -72,6 +72,8 @@ struct PeerInfo {
 	bool hasDataChannel = false;
 	std::shared_ptr<rtc::PeerConnection> pc;
 	std::shared_ptr<rtc::DataChannel> dataChannel;
+	std::shared_ptr<rtc::Track> audioTrack;
+	std::shared_ptr<rtc::Track> videoTrack;
 };
 
 // Room information

@@ -38,10 +38,42 @@ if(BUILD_PLUGIN)
         endif()
     endif()
 
+    if(NOT LIBOBS_FOUND)
+        find_path(LIBOBS_INCLUDE_DIR obs.h
+            HINTS ${CMAKE_PREFIX_PATH}
+            PATH_SUFFIXES include/obs include obs
+        )
+        find_library(LIBOBS_LIBRARY NAMES obs libobs
+            HINTS ${CMAKE_PREFIX_PATH}
+            PATH_SUFFIXES lib lib64 lib/x86_64-linux-gnu
+        )
+        if(LIBOBS_INCLUDE_DIR AND LIBOBS_LIBRARY)
+            set(LIBOBS_FOUND TRUE)
+            set(LIBOBS_INCLUDE_DIRS ${LIBOBS_INCLUDE_DIR})
+            set(LIBOBS_LIBRARIES ${LIBOBS_LIBRARY})
+        endif()
+    endif()
+
     if(NOT OBS_FRONTEND_FOUND)
         find_package(obs-frontend-api QUIET)
         if(obs-frontend-api_FOUND)
             set(OBS_FRONTEND_FOUND TRUE)
+        endif()
+    endif()
+
+    if(NOT OBS_FRONTEND_FOUND)
+        find_path(OBS_FRONTEND_INCLUDE_DIR obs-frontend-api.h
+            HINTS ${CMAKE_PREFIX_PATH}
+            PATH_SUFFIXES include/obs include obs
+        )
+        find_library(OBS_FRONTEND_LIBRARY NAMES obs-frontend-api libobs-frontend-api
+            HINTS ${CMAKE_PREFIX_PATH}
+            PATH_SUFFIXES lib lib64 lib/x86_64-linux-gnu
+        )
+        if(OBS_FRONTEND_INCLUDE_DIR AND OBS_FRONTEND_LIBRARY)
+            set(OBS_FRONTEND_FOUND TRUE)
+            set(OBS_FRONTEND_INCLUDE_DIRS ${OBS_FRONTEND_INCLUDE_DIR})
+            set(OBS_FRONTEND_LIBRARIES ${OBS_FRONTEND_LIBRARY})
         endif()
     endif()
 
