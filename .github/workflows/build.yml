@@ -117,6 +117,7 @@ jobs:
             -DENABLE_UI=OFF \
             -DENABLE_QT=OFF \
             -DENABLE_SCRIPTING=OFF \
+            -DENABLE_RIST=OFF \
             -DOBS_VERSION_OVERRIDE=${{ env.OBS_VERSION }}
           cmake --build build_ubuntu --config RelWithDebInfo --parallel
           cmake --install build_ubuntu --prefix ${{ github.workspace }}/obs-sdk --component obs-libraries
@@ -134,7 +135,8 @@ jobs:
             -DNO_EXAMPLES=ON \
             -DNO_TESTS=ON \
             -DUSE_GNUTLS=OFF \
-            -DUSE_NICE=OFF
+            -DUSE_NICE=OFF \
+            -DCMAKE_POLICY_VERSION_MINIMUM=3.5
           cmake --build build
           sudo cmake --install build
 
@@ -209,6 +211,7 @@ jobs:
             -DNO_TESTS=ON \
             -DUSE_GNUTLS=OFF \
             -DUSE_NICE=OFF \
+            -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
             -DOPENSSL_ROOT_DIR=$(brew --prefix openssl@3)
           cmake --build build
           cmake --install build
@@ -317,6 +320,7 @@ jobs:
           cmake --install build_x64 --prefix "${{ github.workspace }}\obs-sdk" --config RelWithDebInfo --component obs-libraries
           cmake --install build_x64 --prefix "${{ github.workspace }}\obs-sdk" --config RelWithDebInfo --component obs-headers
           cmake --install build_x64 --prefix "${{ github.workspace }}\obs-sdk" --config RelWithDebInfo --component obs-frontend-api
+          Get-ChildItem -Path "${{ github.workspace }}\obs-sdk" -Recurse | Select-Object -First 200
 
       - name: Build libdatachannel
         run: |
