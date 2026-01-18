@@ -24,6 +24,12 @@ find_package(Threads REQUIRED)
 
 if(DEFINED OBS_SDK_PATH)
     list(PREPEND CMAKE_PREFIX_PATH "${OBS_SDK_PATH}")
+    if(EXISTS "${OBS_SDK_PATH}/include/obs/obs-module.h")
+        set(LIBOBS_INCLUDE_DIRS "${OBS_SDK_PATH}/include/obs")
+    endif()
+    if(EXISTS "${OBS_SDK_PATH}/include/obs-frontend-api/obs-frontend-api.h")
+        set(OBS_FRONTEND_INCLUDE_DIRS "${OBS_SDK_PATH}/include/obs-frontend-api")
+    endif()
 endif()
 
 # Build plugin only if requested
