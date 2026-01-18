@@ -9,7 +9,7 @@ on:
 env:
   PLUGIN_NAME: obs-vdoninja
   OBS_VERSION: 30.0.0
-  OBS_VERSION_WIN: 30.0
+  OBS_VERSION_WIN: "30.0"
 
 jobs:
   build-linux:
@@ -128,11 +128,11 @@ jobs:
           fi
           OBS_FRAMEWORK="${OBS_APP}/Contents/Frameworks/obs.framework"
           FRONTEND_FRAMEWORK="${OBS_APP}/Contents/Frameworks/obs-frontend-api.framework"
-          OBS_HEADERS="${OBS_FRAMEWORK}/Versions/A/Headers"
-          FRONTEND_HEADERS="${FRONTEND_FRAMEWORK}/Versions/A/Headers"
-          OBS_LIB="${OBS_FRAMEWORK}/Versions/A/obs"
-          FRONTEND_LIB="${FRONTEND_FRAMEWORK}/Versions/A/obs-frontend-api"
-          if [ ! -d "${OBS_HEADERS}" ] || [ ! -d "${FRONTEND_HEADERS}" ] || [ ! -f "${OBS_LIB}" ] || [ ! -f "${FRONTEND_LIB}" ]; then
+          OBS_HEADERS=$(find "${OBS_FRAMEWORK}" -path "*/Headers" -type d | head -1)
+          FRONTEND_HEADERS=$(find "${FRONTEND_FRAMEWORK}" -path "*/Headers" -type d | head -1)
+          OBS_LIB=$(find "${OBS_FRAMEWORK}" -type f -name "obs" | head -1)
+          FRONTEND_LIB=$(find "${FRONTEND_FRAMEWORK}" -type f -name "obs-frontend-api" | head -1)
+          if [ -z "${OBS_HEADERS}" ] || [ -z "${FRONTEND_HEADERS}" ] || [ -z "${OBS_LIB}" ] || [ -z "${FRONTEND_LIB}" ]; then
             echo "OBS SDK headers or libraries not found"
             exit 1
           fi
@@ -250,7 +250,13 @@ jobs:
 
       - name: Download OBS SDK
         run: |
-          Invoke-WebRequest -Uri "https://github.com/obsproject/obs-studio/releases/download/${{ env.OBS_VERSION }}/OBS-Studio-${{ env.OBS_VERSION_WIN }}.zip" -OutFile "obs-sdk.zip"
+          $obsVersionWin = "${{ env.OBS_VERSION_WIN }}"
+          if (-not $obsVersionWin.EndsWith(".zip")) {
+            $obsZip = "OBS-Studio-$obsVersionWin.zip"
+          } else {
+            $obsZip = $obsVersionWin
+          }
+          Invoke-WebRequest -Uri "https://github.com/obsproject/obs-studio/releases/download/${{ env.OBS_VERSION }}/$obsZip" -OutFile "obs-sdk.zip"
           Expand-Archive -Path "obs-sdk.zip" -DestinationPath "obs-sdk"
           if (Test-Path "obs-sdk\obs-studio\sdk") {
             Copy-Item "obs-sdk\obs-studio\sdk\*" -Destination "obs-sdk" -Recurse -Force
