@@ -8,14 +8,14 @@ on:
 
 env:
   PLUGIN_NAME: obs-vdoninja
-  OBS_VERSION: 30.0.0
-  OBS_VERSION_WIN: "30.0"
-  OBS_VERSION_WIN_ZIP: "OBS-Studio-30.0.zip"
+  OBS_VERSION: 32.0.4
+  OBS_VERSION_WIN: "32.0.4"
+  OBS_VERSION_WIN_ZIP: "OBS-Studio-32.0.4-Windows-x64.zip"
 
 jobs:
   build-linux:
     name: Linux
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -41,7 +41,7 @@ jobs:
       - name: Download OBS SDK
         run: |
           curl -L -o obs-studio.deb \
-            "https://github.com/obsproject/obs-studio/releases/download/${{ env.OBS_VERSION }}/obs-studio_${{ env.OBS_VERSION }}-0obsproject1.jammy_amd64.deb"
+            "https://github.com/obsproject/obs-studio/releases/download/${{ env.OBS_VERSION }}/obs-studio_${{ env.OBS_VERSION }}-0obsproject1.noble_amd64.deb"
           dpkg -x obs-studio.deb obs-sdk
 
       - name: Build libdatachannel
@@ -138,6 +138,8 @@ jobs:
             echo "OBS framework: ${OBS_FRAMEWORK}"
             ls -al "${OBS_FRAMEWORK}" || true
             ls -al "${FRONTEND_FRAMEWORK}" || true
+            find "${OBS_APP}/Contents" -maxdepth 3 -type d -name "Headers" -print || true
+            find "${OBS_APP}/Contents" -maxdepth 3 -type f -name "libobs*.dylib" -print || true
             exit 1
           fi
           mkdir -p obs-sdk/include obs-sdk/lib
