@@ -45,9 +45,14 @@ if(BUILD_PLUGIN)
             if(EXISTS "${_OBS_FRAMEWORK_PATH}/libobs.framework")
                 set(LIBOBS_FOUND TRUE)
                 set(LIBOBS_LIBRARIES "${_OBS_FRAMEWORK_PATH}/libobs.framework")
-                # Headers are inside the framework
-                set(LIBOBS_INCLUDE_DIRS "${_OBS_FRAMEWORK_PATH}/libobs.framework/Headers")
-                message(STATUS "Found libobs framework: ${LIBOBS_LIBRARIES}")
+                # Headers: prefer SDK include dir if exists (manually copied), otherwise framework headers
+                if(EXISTS "${OBS_SDK_PATH}/include/obs/obs.h")
+                    set(LIBOBS_INCLUDE_DIRS "${OBS_SDK_PATH}/include/obs")
+                    message(STATUS "Found libobs framework with SDK headers: ${LIBOBS_LIBRARIES}")
+                else()
+                    set(LIBOBS_INCLUDE_DIRS "${_OBS_FRAMEWORK_PATH}/libobs.framework/Headers")
+                    message(STATUS "Found libobs framework: ${LIBOBS_LIBRARIES}")
+                endif()
             endif()
 
             # Check for obs-frontend-api - it can be a framework or dylib

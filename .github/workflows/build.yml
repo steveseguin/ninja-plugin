@@ -227,9 +227,21 @@ jobs:
           if [ -f "${{ github.workspace }}/obs-sdk/lib/libobs-frontend-api.1.dylib" ]; then
             ln -sf libobs-frontend-api.1.dylib ${{ github.workspace }}/obs-sdk/lib/libobs-frontend-api.dylib
           fi
-          # Copy obs-frontend-api header (not installed by default)
+          # Copy headers that aren't installed by default (similar to Windows)
+          mkdir -p ${{ github.workspace }}/obs-sdk/include/obs
+          mkdir -p ${{ github.workspace }}/obs-sdk/include/obs/util
+          mkdir -p ${{ github.workspace }}/obs-sdk/include/obs/graphics
+          mkdir -p ${{ github.workspace }}/obs-sdk/include/obs/media-io
+          mkdir -p ${{ github.workspace }}/obs-sdk/include/obs/callback
           mkdir -p ${{ github.workspace }}/obs-sdk/include/obs-frontend-api
-          cp UI/obs-frontend-api/obs-frontend-api.h ${{ github.workspace }}/obs-sdk/include/obs-frontend-api/ 2>/dev/null || true
+          cp libobs/*.h ${{ github.workspace }}/obs-sdk/include/obs/ 2>/dev/null || true
+          cp libobs/util/*.h ${{ github.workspace }}/obs-sdk/include/obs/util/ 2>/dev/null || true
+          cp libobs/graphics/*.h ${{ github.workspace }}/obs-sdk/include/obs/graphics/ 2>/dev/null || true
+          cp libobs/media-io/*.h ${{ github.workspace }}/obs-sdk/include/obs/media-io/ 2>/dev/null || true
+          cp libobs/callback/*.h ${{ github.workspace }}/obs-sdk/include/obs/callback/ 2>/dev/null || true
+          # Copy obs-frontend-api header (OBS 31+: now in frontend/api/)
+          cp frontend/api/obs-frontend-api.h ${{ github.workspace }}/obs-sdk/include/obs-frontend-api/ 2>/dev/null || \
+            cp UI/obs-frontend-api/obs-frontend-api.h ${{ github.workspace }}/obs-sdk/include/obs-frontend-api/ 2>/dev/null || true
           # Verify libs and headers exist
           echo "=== Checking OBS libraries ==="
           ls -la ${{ github.workspace }}/obs-sdk/lib/ 2>/dev/null | head -20 || echo "No lib dir"
@@ -237,7 +249,8 @@ jobs:
           echo "=== Checking Frameworks ==="
           ls -la ${{ github.workspace }}/obs-sdk/OBS.app/Contents/Frameworks/ 2>/dev/null | head -30 || echo "No Frameworks dir"
           echo "=== Checking headers ==="
-          ls -la ${{ github.workspace }}/obs-sdk/include/ 2>/dev/null || echo "No include dir"
+          ls -la ${{ github.workspace }}/obs-sdk/include/obs/ 2>/dev/null || echo "No obs include dir"
+          ls -la ${{ github.workspace }}/obs-sdk/include/obs-frontend-api/ 2>/dev/null || echo "No frontend-api include dir"
 
       - name: Build libdatachannel
         run: |
@@ -331,11 +344,21 @@ jobs:
           Copy-Item -Path "libobs\media-io\*.h" -Destination "${{ github.workspace }}\obs-sdk\include\obs\media-io"
           New-Item -ItemType Directory -Force -Path "${{ github.workspace }}\obs-sdk\include\obs\callback"
           Copy-Item -Path "libobs\callback\*.h" -Destination "${{ github.workspace }}\obs-sdk\include\obs\callback"
-          Copy-Item -Path "UI\obs-frontend-api\obs-frontend-api.h" -Destination "${{ github.workspace }}\obs-sdk\include\obs-frontend-api"
+          # Copy obs-frontend-api header (OBS 31+: now in frontend\api\)
+          if (Test-Path "frontend\api\obs-frontend-api.h") {
+            Copy-Item -Path "frontend\api\obs-frontend-api.h" -Destination "${{ github.workspace }}\obs-sdk\include\obs-frontend-api"
+          } elseif (Test-Path "UI\obs-frontend-api\obs-frontend-api.h") {
+            Copy-Item -Path "UI\obs-frontend-api\obs-frontend-api.h" -Destination "${{ github.workspace }}\obs-sdk\include\obs-frontend-api"
+          }
           # Copy import libraries
           New-Item -ItemType Directory -Force -Path "${{ github.workspace }}\obs-sdk\lib"
           Copy-Item -Path "build_x64\libobs\RelWithDebInfo\obs.lib" -Destination "${{ github.workspace }}\obs-sdk\lib"
-          Copy-Item -Path "build_x64\UI\obs-frontend-api\RelWithDebInfo\obs-frontend-api.lib" -Destination "${{ github.workspace }}\obs-sdk\lib"
+          # OBS 31+: obs-frontend-api.lib moved to frontend\api\
+          if (Test-Path "build_x64\frontend\api\RelWithDebInfo\obs-frontend-api.lib") {
+            Copy-Item -Path "build_x64\frontend\api\RelWithDebInfo\obs-frontend-api.lib" -Destination "${{ github.workspace }}\obs-sdk\lib"
+          } elseif (Test-Path "build_x64\UI\obs-frontend-api\RelWithDebInfo\obs-frontend-api.lib") {
+            Copy-Item -Path "build_x64\UI\obs-frontend-api\RelWithDebInfo\obs-frontend-api.lib" -Destination "${{ github.workspace }}\obs-sdk\lib"
+          }
           Write-Host "=== OBS SDK install tree ==="
           Get-ChildItem -Path "${{ github.workspace }}\obs-sdk" -Recurse | Select-Object -First 100
 
