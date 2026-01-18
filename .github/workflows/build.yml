@@ -105,7 +105,6 @@ jobs:
             libasio-dev \
             libqrcodegencpp-dev \
             libffmpeg-nvenc-dev \
-            librist-dev \
             libsrt-openssl-dev \
             qt6-base-dev \
             libqt6svg6-dev \
@@ -176,13 +175,13 @@ jobs:
       - name: Install Dependencies
         run: |
           brew install cmake ninja openssl@3 qt@5
-          sudo xcode-select -s /Applications/Xcode_16.0.app
 
       - name: Build OBS SDK
         run: |
           git clone --depth 1 --branch ${{ env.OBS_SOURCE_REF }} --recurse-submodules https://github.com/obsproject/obs-studio.git obs-studio
           cd obs-studio
           git checkout "refs/tags/${{ env.OBS_SOURCE_TAG }}" || git checkout ${{ env.OBS_SOURCE_TAG }}
+          export DEVELOPER_DIR=$(ls -d /Applications/Xcode_*.app 2>/dev/null | sort -V | tail -1)/Contents/Developer
           cmake --preset macos-ci -B build_macos \
             -DCMAKE_OSX_ARCHITECTURES=${{ matrix.arch }} \
             -DENABLE_BROWSER=OFF \
@@ -325,7 +324,7 @@ jobs:
             -DNO_TESTS=ON `
             -DUSE_GNUTLS=OFF `
             -DUSE_NICE=OFF `
-            -DCMAKE_POLICY_VERSION_MINIMUM=3.5 `
+            -DCMAKE_POLICY_VERSION_MINIMUM=3.5.0 `
             -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_INSTALLATION_ROOT\scripts\buildsystems\vcpkg.cmake"
           cmake --build build
           cmake --install build
