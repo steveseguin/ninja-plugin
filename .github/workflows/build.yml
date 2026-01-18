@@ -41,7 +41,7 @@ jobs:
       - name: Download OBS SDK
         run: |
           curl -L -o obs-studio.deb \
-            "https://github.com/obsproject/obs-studio/releases/download/${{ env.OBS_VERSION }}/obs-studio_${{ env.OBS_VERSION }}-0obsproject1.noble_amd64.deb"
+            "https://github.com/obsproject/obs-studio/releases/download/${{ env.OBS_VERSION }}/OBS-Studio-${{ env.OBS_VERSION }}-Ubuntu-24.04-x86_64.deb"
           dpkg -x obs-studio.deb obs-sdk
 
       - name: Build libdatachannel
@@ -127,26 +127,21 @@ jobs:
             echo "OBS.app not found in /Applications"
             exit 1
           fi
-          OBS_FRAMEWORK="${OBS_APP}/Contents/Frameworks/obs.framework"
-          FRONTEND_FRAMEWORK="${OBS_APP}/Contents/Frameworks/obs-frontend-api.framework"
-          OBS_HEADERS=$(find "${OBS_FRAMEWORK}" -path "*/Headers" -type d | head -1)
-          FRONTEND_HEADERS=$(find "${FRONTEND_FRAMEWORK}" -path "*/Headers" -type d | head -1)
-          OBS_LIB=$(find "${OBS_FRAMEWORK}" -type f -name "obs" | head -1)
-          FRONTEND_LIB=$(find "${FRONTEND_FRAMEWORK}" -type f -name "obs-frontend-api" | head -1)
-          if [ -z "${OBS_HEADERS}" ] || [ -z "${FRONTEND_HEADERS}" ] || [ -z "${OBS_LIB}" ] || [ -z "${FRONTEND_LIB}" ]; then
-            echo "OBS SDK headers or libraries not found"
-            echo "OBS framework: ${OBS_FRAMEWORK}"
-            ls -al "${OBS_FRAMEWORK}" || true
-            ls -al "${FRONTEND_FRAMEWORK}" || true
-            find "${OBS_APP}/Contents" -maxdepth 3 -type d -name "Headers" -print || true
-            find "${OBS_APP}/Contents" -maxdepth 3 -type f -name "libobs*.dylib" -print || true
+          OBS_SDK="${OBS_APP}/Contents/Resources/obs-sdk"
+          if [ ! -d "${OBS_SDK}" ]; then
+            OBS_SDK=$(find "${OBS_APP}/Contents/Resources" -maxdepth 3 -type d -name "obs-sdk" | head -1)
+          fi
+          if [ -z "${OBS_SDK}" ] || [ ! -d "${OBS_SDK}" ]; then
+            echo "OBS SDK folder not found in app bundle"
+            find "${OBS_APP}/Contents" -maxdepth 4 -type d -name "obs-sdk" -print || true
+            find "${OBS_APP}/Contents/Frameworks" -maxdepth 2 -type f -name "libobs*.dylib" -print || true
             exit 1
           fi
           mkdir -p obs-sdk/include obs-sdk/lib
-          cp -R "${OBS_HEADERS}" obs-sdk/include/obs
-          cp -R "${FRONTEND_HEADERS}" obs-sdk/include/obs-frontend-api
-          cp -R "${OBS_LIB}" obs-sdk/lib/libobs.dylib
-          cp -R "${FRONTEND_LIB}" obs-sdk/lib/libobs-frontend-api.dylib
+          cp -R "${OBS_SDK}/include/obs" obs-sdk/include/obs
+          cp -R "${OBS_SDK}/include/obs-frontend-api" obs-sdk/include/obs-frontend-api
+          cp -R "${OBS_SDK}/lib/libobs.dylib" obs-sdk/lib/libobs.dylib
+          cp -R "${OBS_SDK}/lib/libobs-frontend-api.dylib" obs-sdk/lib/libobs-frontend-api.dylib
 
       - name: Build libdatachannel
         run: |
@@ -258,11 +253,13 @@ jobs:
         run: |
           Invoke-WebRequest -Uri "https://github.com/obsproject/obs-studio/releases/download/${{ env.OBS_VERSION }}/${{ env.OBS_VERSION_WIN_ZIP }}" -OutFile "obs-sdk.zip"
           Expand-Archive -Path "obs-sdk.zip" -DestinationPath "obs-sdk"
-          if (Test-Path "obs-sdk\obs-studio\sdk") {
-            Copy-Item "obs-sdk\obs-studio\sdk\*" -Destination "obs-sdk" -Recurse -Force
-          } else {
-            Copy-Item "obs-sdk\sdk\*" -Destination "obs-sdk" -Recurse -Force
+          $sdkPath = Get-ChildItem -Path "obs-sdk" -Recurse -Directory -Filter "sdk" | Select-Object -First 1
+          if (-not $sdkPath) {
+            Write-Error "SDK folder not found in extracted OBS zip"
+            Get-ChildItem -Path "obs-sdk" -Recurse | Select-Object -First 200
+            exit 1
           }
+          Copy-Item "$($sdkPath.FullName)\*" -Destination "obs-sdk" -Recurse -Force
 
       - name: Build libdatachannel
         run: |
