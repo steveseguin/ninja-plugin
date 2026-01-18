@@ -10,6 +10,7 @@ env:
   PLUGIN_NAME: obs-vdoninja
   OBS_VERSION: 30.0.0
   OBS_VERSION_WIN: "30.0"
+  OBS_VERSION_WIN_ZIP: "OBS-Studio-30.0.zip"
 
 jobs:
   build-linux:
@@ -134,6 +135,9 @@ jobs:
           FRONTEND_LIB=$(find "${FRONTEND_FRAMEWORK}" -type f -name "obs-frontend-api" | head -1)
           if [ -z "${OBS_HEADERS}" ] || [ -z "${FRONTEND_HEADERS}" ] || [ -z "${OBS_LIB}" ] || [ -z "${FRONTEND_LIB}" ]; then
             echo "OBS SDK headers or libraries not found"
+            echo "OBS framework: ${OBS_FRAMEWORK}"
+            ls -al "${OBS_FRAMEWORK}" || true
+            ls -al "${FRONTEND_FRAMEWORK}" || true
             exit 1
           fi
           mkdir -p obs-sdk/include obs-sdk/lib
@@ -250,13 +254,7 @@ jobs:
 
       - name: Download OBS SDK
         run: |
-          $obsVersionWin = "${{ env.OBS_VERSION_WIN }}"
-          if (-not $obsVersionWin.EndsWith(".zip")) {
-            $obsZip = "OBS-Studio-$obsVersionWin.zip"
-          } else {
-            $obsZip = $obsVersionWin
-          }
-          Invoke-WebRequest -Uri "https://github.com/obsproject/obs-studio/releases/download/${{ env.OBS_VERSION }}/$obsZip" -OutFile "obs-sdk.zip"
+          Invoke-WebRequest -Uri "https://github.com/obsproject/obs-studio/releases/download/${{ env.OBS_VERSION }}/${{ env.OBS_VERSION_WIN_ZIP }}" -OutFile "obs-sdk.zip"
           Expand-Archive -Path "obs-sdk.zip" -DestinationPath "obs-sdk"
           if (Test-Path "obs-sdk\obs-studio\sdk") {
             Copy-Item "obs-sdk\obs-studio\sdk\*" -Destination "obs-sdk" -Recurse -Force
