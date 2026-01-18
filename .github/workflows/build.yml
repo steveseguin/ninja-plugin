@@ -9,7 +9,7 @@ on:
 env:
   PLUGIN_NAME: obs-vdoninja
   OBS_VERSION: 32.0.4
-  OBS_SOURCE_REF: master
+  OBS_SOURCE_REF: 32.0.4
   OBS_VERSION_WIN: "32.0.4"
   OBS_VERSION_WIN_ZIP: "OBS-Studio-32.0.4-Windows-x64.zip"
 
@@ -115,7 +115,8 @@ jobs:
             -DENABLE_BROWSER=OFF \
             -DENABLE_UI=OFF \
             -DENABLE_QT=OFF \
-            -DENABLE_SCRIPTING=OFF
+            -DENABLE_SCRIPTING=OFF \
+            -DOBS_VERSION_OVERRIDE=${{ env.OBS_VERSION }}
           cmake --build build_ubuntu --config RelWithDebInfo --parallel
           cmake --install build_ubuntu --prefix ${{ github.workspace }}/obs-sdk
 
@@ -183,7 +184,8 @@ jobs:
             -DENABLE_BROWSER=OFF \
             -DENABLE_UI=OFF \
             -DENABLE_QT=OFF \
-            -DENABLE_SCRIPTING=OFF
+            -DENABLE_SCRIPTING=OFF \
+            -DOBS_VERSION_OVERRIDE=${{ env.OBS_VERSION }}
           cmake --build build_macos --config RelWithDebInfo
           cmake --install build_macos --prefix ${{ github.workspace }}/obs-sdk
 
@@ -297,11 +299,12 @@ jobs:
         run: |
           git clone --depth 1 --branch ${{ env.OBS_SOURCE_REF }} --recurse-submodules https://github.com/obsproject/obs-studio.git obs-studio
           cd obs-studio
-          cmake --preset windows-ci-x64 -B build_x64 \
-            -DENABLE_BROWSER=OFF \
-            -DENABLE_UI=OFF \
-            -DENABLE_QT=OFF \
-            -DENABLE_SCRIPTING=OFF
+          cmake --preset windows-ci-x64 -B build_x64 `
+            -DENABLE_BROWSER=OFF `
+            -DENABLE_UI=OFF `
+            -DENABLE_QT=OFF `
+            -DENABLE_SCRIPTING=OFF `
+            -DOBS_VERSION_OVERRIDE=${{ env.OBS_VERSION }}
           cmake --build --preset windows-x64 --config RelWithDebInfo --parallel
           cmake --install build_x64 --prefix "${{ github.workspace }}\obs-sdk" --config RelWithDebInfo
 
