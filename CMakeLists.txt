@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(obs-vdoninja VERSION 1.0.0 LANGUAGES C CXX)
+project(obs-vdoninja VERSION 1.0.2 LANGUAGES C CXX)
 
 # Plugin configuration
 set(PLUGIN_AUTHOR "VDO.Ninja Community")
@@ -64,7 +64,7 @@ if(BUILD_PLUGIN)
     if(NOT OBS_FRONTEND_FOUND)
         find_path(OBS_FRONTEND_INCLUDE_DIR obs-frontend-api.h
             HINTS ${CMAKE_PREFIX_PATH}
-            PATH_SUFFIXES include/obs include obs
+            PATH_SUFFIXES include/obs include obs include/obs-frontend-api include/obs-frontend-api/Headers
         )
         find_library(OBS_FRONTEND_LIBRARY NAMES obs-frontend-api libobs-frontend-api
             HINTS ${CMAKE_PREFIX_PATH}
@@ -147,6 +147,9 @@ if(BUILD_PLUGIN)
         endif()
         if(LIBOBS_INCLUDE_DIRS)
             target_include_directories(${PROJECT_NAME} PRIVATE ${LIBOBS_INCLUDE_DIRS})
+        endif()
+        if(OBS_FRONTEND_INCLUDE_DIRS)
+            target_include_directories(${PROJECT_NAME} PRIVATE ${OBS_FRONTEND_INCLUDE_DIRS})
         endif()
     endif()
 

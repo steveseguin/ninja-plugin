@@ -129,9 +129,9 @@ cat > "$INSTALL_DIR/Contents/Info.plist" << EOF
     <key>CFBundleIdentifier</key>
     <string>com.vdoninja.obs-plugin</string>
     <key>CFBundleVersion</key>
-    <string>1.0.0</string>
+    <string>1.0.2</string>
     <key>CFBundleShortVersionString</key>
-    <string>1.0.0</string>
+    <string>1.0.2</string>
     <key>CFBundleExecutable</key>
     <string>obs-vdoninja</string>
     <key>CFBundlePackageType</key>
