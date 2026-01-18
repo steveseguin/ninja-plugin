@@ -36,10 +36,12 @@ endif()
 if(BUILD_PLUGIN)
     # When OBS_SDK_PATH is set, use find_library to get full paths (not pkg-config which returns -lobs)
     if(DEFINED OBS_SDK_PATH)
-        # On macOS, check for app bundle framework structure first
+        # On macOS, check for app bundle framework/dylib structure first
         if(APPLE)
-            # macOS app bundle structure: OBS.app/Contents/Frameworks/libobs.framework
+            # macOS app bundle structure: OBS.app/Contents/Frameworks/
             set(_OBS_FRAMEWORK_PATH "${OBS_SDK_PATH}/OBS.app/Contents/Frameworks")
+
+            # Check for libobs framework
             if(EXISTS "${_OBS_FRAMEWORK_PATH}/libobs.framework")
                 set(LIBOBS_FOUND TRUE)
                 set(LIBOBS_LIBRARIES "${_OBS_FRAMEWORK_PATH}/libobs.framework")
@@ -47,11 +49,40 @@ if(BUILD_PLUGIN)
                 set(LIBOBS_INCLUDE_DIRS "${_OBS_FRAMEWORK_PATH}/libobs.framework/Headers")
                 message(STATUS "Found libobs framework: ${LIBOBS_LIBRARIES}")
             endif()
+
+            # Check for obs-frontend-api - it can be a framework or dylib
             if(EXISTS "${_OBS_FRAMEWORK_PATH}/libobs-frontend-api.framework")
                 set(OBS_FRONTEND_FOUND TRUE)
                 set(OBS_FRONTEND_LIBRARIES "${_OBS_FRAMEWORK_PATH}/libobs-frontend-api.framework")
                 set(OBS_FRONTEND_INCLUDE_DIRS "${_OBS_FRAMEWORK_PATH}/libobs-frontend-api.framework/Headers")
                 message(STATUS "Found obs-frontend-api framework: ${OBS_FRONTEND_LIBRARIES}")
+            elseif(EXISTS "${_OBS_FRAMEWORK_PATH}/obs-frontend-api.dylib")
+                # OBS 31+ installs obs-frontend-api as a dylib, not a framework
+                set(OBS_FRONTEND_FOUND TRUE)
+                set(OBS_FRONTEND_LIBRARIES "${_OBS_FRAMEWORK_PATH}/obs-frontend-api.dylib")
+                # Headers should be in the source or SDK include directory
+                find_path(OBS_FRONTEND_INCLUDE_DIR obs-frontend-api.h
+                    HINTS "${OBS_SDK_PATH}"
+                    PATH_SUFFIXES include/obs include obs include/obs-frontend-api
+                    NO_DEFAULT_PATH
+                )
+                if(OBS_FRONTEND_INCLUDE_DIR)
+                    set(OBS_FRONTEND_INCLUDE_DIRS "${OBS_FRONTEND_INCLUDE_DIR}")
+                endif()
+                message(STATUS "Found obs-frontend-api dylib: ${OBS_FRONTEND_LIBRARIES}")
+            elseif(EXISTS "${_OBS_FRAMEWORK_PATH}/libobs-frontend-api.1.dylib")
+                # Versioned dylib variant
+                set(OBS_FRONTEND_FOUND TRUE)
+                set(OBS_FRONTEND_LIBRARIES "${_OBS_FRAMEWORK_PATH}/libobs-frontend-api.1.dylib")
+                find_path(OBS_FRONTEND_INCLUDE_DIR obs-frontend-api.h
+                    HINTS "${OBS_SDK_PATH}"
+                    PATH_SUFFIXES include/obs include obs include/obs-frontend-api
+                    NO_DEFAULT_PATH
+                )
+                if(OBS_FRONTEND_INCLUDE_DIR)
+                    set(OBS_FRONTEND_INCLUDE_DIRS "${OBS_FRONTEND_INCLUDE_DIR}")
+                endif()
+                message(STATUS "Found obs-frontend-api versioned dylib: ${OBS_FRONTEND_LIBRARIES}")
             endif()
         endif()
 

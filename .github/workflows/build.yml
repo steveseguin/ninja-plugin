@@ -227,10 +227,17 @@ jobs:
           if [ -f "${{ github.workspace }}/obs-sdk/lib/libobs-frontend-api.1.dylib" ]; then
             ln -sf libobs-frontend-api.1.dylib ${{ github.workspace }}/obs-sdk/lib/libobs-frontend-api.dylib
           fi
-          # Verify libs exist
+          # Copy obs-frontend-api header (not installed by default)
+          mkdir -p ${{ github.workspace }}/obs-sdk/include/obs-frontend-api
+          cp UI/obs-frontend-api/obs-frontend-api.h ${{ github.workspace }}/obs-sdk/include/obs-frontend-api/ 2>/dev/null || true
+          # Verify libs and headers exist
           echo "=== Checking OBS libraries ==="
           ls -la ${{ github.workspace }}/obs-sdk/lib/ 2>/dev/null | head -20 || echo "No lib dir"
           ls -la ${{ github.workspace }}/obs-sdk/lib/cmake/ 2>/dev/null | head -20 || echo "No cmake dir"
+          echo "=== Checking Frameworks ==="
+          ls -la ${{ github.workspace }}/obs-sdk/OBS.app/Contents/Frameworks/ 2>/dev/null | head -30 || echo "No Frameworks dir"
+          echo "=== Checking headers ==="
+          ls -la ${{ github.workspace }}/obs-sdk/include/ 2>/dev/null || echo "No include dir"
 
       - name: Build libdatachannel
         run: |
@@ -298,7 +305,7 @@ jobs:
       - name: Install Dependencies
         run: |
           choco install cmake ninja 7zip git -y
-          vcpkg install openssl:x64-windows qt6-base:x64-windows
+          vcpkg install openssl:x64-windows
 
       - name: Build OBS SDK
         run: |
