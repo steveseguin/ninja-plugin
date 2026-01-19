@@ -243,6 +243,9 @@ jobs:
           # Copy obs-frontend-api header (OBS 31+: now in frontend/api/)
           cp frontend/api/obs-frontend-api.h ${{ github.workspace }}/obs-sdk/include/obs-frontend-api/ 2>/dev/null || \
             cp UI/obs-frontend-api/obs-frontend-api.h ${{ github.workspace }}/obs-sdk/include/obs-frontend-api/ 2>/dev/null || true
+          # Copy generated obsconfig.h from build directory (required by obs-config.h)
+          cp build_macos/config/obsconfig.h ${{ github.workspace }}/obs-sdk/include/ 2>/dev/null || \
+            cp build_macos/obsconfig.h ${{ github.workspace }}/obs-sdk/include/ 2>/dev/null || true
           # Verify libs and headers exist
           echo "=== Checking OBS libraries ==="
           ls -la ${{ github.workspace }}/obs-sdk/lib/ 2>/dev/null | head -20 || echo "No lib dir"
@@ -351,6 +354,12 @@ jobs:
             Copy-Item -Path "frontend\api\obs-frontend-api.h" -Destination "${{ github.workspace }}\obs-sdk\include\obs-frontend-api"
           } elseif (Test-Path "UI\obs-frontend-api\obs-frontend-api.h") {
             Copy-Item -Path "UI\obs-frontend-api\obs-frontend-api.h" -Destination "${{ github.workspace }}\obs-sdk\include\obs-frontend-api"
+          }
+          # Copy generated obsconfig.h from build directory (required by obs-config.h)
+          if (Test-Path "build_x64\config\obsconfig.h") {
+            Copy-Item -Path "build_x64\config\obsconfig.h" -Destination "${{ github.workspace }}\obs-sdk\include"
+          } elseif (Test-Path "build_x64\obsconfig.h") {
+            Copy-Item -Path "build_x64\obsconfig.h" -Destination "${{ github.workspace }}\obs-sdk\include"
           }
           # Copy import libraries
           New-Item -ItemType Directory -Force -Path "${{ github.workspace }}\obs-sdk\lib"
