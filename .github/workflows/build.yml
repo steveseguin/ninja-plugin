@@ -227,18 +227,19 @@ jobs:
           if [ -f "${{ github.workspace }}/obs-sdk/lib/libobs-frontend-api.1.dylib" ]; then
             ln -sf libobs-frontend-api.1.dylib ${{ github.workspace }}/obs-sdk/lib/libobs-frontend-api.dylib
           fi
-          # Copy headers that aren't installed by default (similar to Windows)
-          mkdir -p ${{ github.workspace }}/obs-sdk/include/obs
-          mkdir -p ${{ github.workspace }}/obs-sdk/include/obs/util
-          mkdir -p ${{ github.workspace }}/obs-sdk/include/obs/graphics
-          mkdir -p ${{ github.workspace }}/obs-sdk/include/obs/media-io
-          mkdir -p ${{ github.workspace }}/obs-sdk/include/obs/callback
+          # Copy headers that aren't installed by default
+          # OBS headers expect: include/obs.h, include/util/c99defs.h (not include/obs/...)
+          mkdir -p ${{ github.workspace }}/obs-sdk/include
+          mkdir -p ${{ github.workspace }}/obs-sdk/include/util
+          mkdir -p ${{ github.workspace }}/obs-sdk/include/graphics
+          mkdir -p ${{ github.workspace }}/obs-sdk/include/media-io
+          mkdir -p ${{ github.workspace }}/obs-sdk/include/callback
           mkdir -p ${{ github.workspace }}/obs-sdk/include/obs-frontend-api
-          cp libobs/*.h ${{ github.workspace }}/obs-sdk/include/obs/ 2>/dev/null || true
-          cp libobs/util/*.h ${{ github.workspace }}/obs-sdk/include/obs/util/ 2>/dev/null || true
-          cp libobs/graphics/*.h ${{ github.workspace }}/obs-sdk/include/obs/graphics/ 2>/dev/null || true
-          cp libobs/media-io/*.h ${{ github.workspace }}/obs-sdk/include/obs/media-io/ 2>/dev/null || true
-          cp libobs/callback/*.h ${{ github.workspace }}/obs-sdk/include/obs/callback/ 2>/dev/null || true
+          cp libobs/*.h ${{ github.workspace }}/obs-sdk/include/ 2>/dev/null || true
+          cp -r libobs/util/* ${{ github.workspace }}/obs-sdk/include/util/ 2>/dev/null || true
+          cp -r libobs/graphics/* ${{ github.workspace }}/obs-sdk/include/graphics/ 2>/dev/null || true
+          cp -r libobs/media-io/* ${{ github.workspace }}/obs-sdk/include/media-io/ 2>/dev/null || true
+          cp -r libobs/callback/* ${{ github.workspace }}/obs-sdk/include/callback/ 2>/dev/null || true
           # Copy obs-frontend-api header (OBS 31+: now in frontend/api/)
           cp frontend/api/obs-frontend-api.h ${{ github.workspace }}/obs-sdk/include/obs-frontend-api/ 2>/dev/null || \
             cp UI/obs-frontend-api/obs-frontend-api.h ${{ github.workspace }}/obs-sdk/include/obs-frontend-api/ 2>/dev/null || true
@@ -249,7 +250,8 @@ jobs:
           echo "=== Checking Frameworks ==="
           ls -la ${{ github.workspace }}/obs-sdk/OBS.app/Contents/Frameworks/ 2>/dev/null | head -30 || echo "No Frameworks dir"
           echo "=== Checking headers ==="
-          ls -la ${{ github.workspace }}/obs-sdk/include/obs/ 2>/dev/null || echo "No obs include dir"
+          ls -la ${{ github.workspace }}/obs-sdk/include/ 2>/dev/null | head -20 || echo "No include dir"
+          ls -la ${{ github.workspace }}/obs-sdk/include/util/ 2>/dev/null | head -10 || echo "No util include dir"
           ls -la ${{ github.workspace }}/obs-sdk/include/obs-frontend-api/ 2>/dev/null || echo "No frontend-api include dir"
 
       - name: Build libdatachannel
@@ -332,18 +334,18 @@ jobs:
           cmake --build --preset windows-x64 --config RelWithDebInfo --parallel
           cmake --install build_x64 --prefix "${{ github.workspace }}\obs-sdk" --config RelWithDebInfo
           # Copy headers that aren't installed by default
-          New-Item -ItemType Directory -Force -Path "${{ github.workspace }}\obs-sdk\include\obs"
+          # OBS headers expect: include/obs.h, include/util/c99defs.h (not include/obs/...)
+          New-Item -ItemType Directory -Force -Path "${{ github.workspace }}\obs-sdk\include"
+          New-Item -ItemType Directory -Force -Path "${{ github.workspace }}\obs-sdk\include\util"
+          New-Item -ItemType Directory -Force -Path "${{ github.workspace }}\obs-sdk\include\graphics"
+          New-Item -ItemType Directory -Force -Path "${{ github.workspace }}\obs-sdk\include\media-io"
+          New-Item -ItemType Directory -Force -Path "${{ github.workspace }}\obs-sdk\include\callback"
           New-Item -ItemType Directory -Force -Path "${{ github.workspace }}\obs-sdk\include\obs-frontend-api"
-          Copy-Item -Path "libobs\*.h" -Destination "${{ github.workspace }}\obs-sdk\include\obs"
-          Copy-Item -Path "libobs\util\*.h" -Destination "${{ github.workspace }}\obs-sdk\include\obs\util" -Force
-          New-Item -ItemType Directory -Force -Path "${{ github.workspace }}\obs-sdk\include\obs\util"
-          Copy-Item -Path "libobs\util\*.h" -Destination "${{ github.workspace }}\obs-sdk\include\obs\util"
-          New-Item -ItemType Directory -Force -Path "${{ github.workspace }}\obs-sdk\include\obs\graphics"
-          Copy-Item -Path "libobs\graphics\*.h" -Destination "${{ github.workspace }}\obs-sdk\include\obs\graphics"
-          New-Item -ItemType Directory -Force -Path "${{ github.workspace }}\obs-sdk\include\obs\media-io"
-          Copy-Item -Path "libobs\media-io\*.h" -Destination "${{ github.workspace }}\obs-sdk\include\obs\media-io"
-          New-Item -ItemType Directory -Force -Path "${{ github.workspace }}\obs-sdk\include\obs\callback"
-          Copy-Item -Path "libobs\callback\*.h" -Destination "${{ github.workspace }}\obs-sdk\include\obs\callback"
+          Copy-Item -Path "libobs\*.h" -Destination "${{ github.workspace }}\obs-sdk\include"
+          Copy-Item -Path "libobs\util\*" -Destination "${{ github.workspace }}\obs-sdk\include\util" -Recurse -Force
+          Copy-Item -Path "libobs\graphics\*" -Destination "${{ github.workspace }}\obs-sdk\include\graphics" -Recurse -Force
+          Copy-Item -Path "libobs\media-io\*" -Destination "${{ github.workspace }}\obs-sdk\include\media-io" -Recurse -Force
+          Copy-Item -Path "libobs\callback\*" -Destination "${{ github.workspace }}\obs-sdk\include\callback" -Recurse -Force
           # Copy obs-frontend-api header (OBS 31+: now in frontend\api\)
           if (Test-Path "frontend\api\obs-frontend-api.h") {
             Copy-Item -Path "frontend\api\obs-frontend-api.h" -Destination "${{ github.workspace }}\obs-sdk\include\obs-frontend-api"
