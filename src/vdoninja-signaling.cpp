@@ -85,7 +85,8 @@ bool hexToBytes(const std::string &hex, std::vector<uint8_t> &out)
 	return true;
 }
 
-bool encryptAesCbcHex(const std::string &plaintext, const std::string &phrase, std::string &cipherHex, std::string &vectorHex)
+bool encryptAesCbcHex(const std::string &plaintext, const std::string &phrase, std::string &cipherHex,
+                      std::string &vectorHex)
 {
 #if VDONINJA_HAS_OPENSSL
 	if (phrase.empty()) {
@@ -110,11 +111,10 @@ bool encryptAesCbcHex(const std::string &plaintext, const std::string &phrase, s
 	std::vector<uint8_t> out(plaintext.size() + EVP_MAX_BLOCK_LENGTH);
 	int outLen1 = 0;
 	int outLen2 = 0;
-	const bool ok =
-	    EVP_EncryptInit_ex(ctx, EVP_aes_256_cbc(), nullptr, key.data(), iv) == 1 &&
-	    EVP_EncryptUpdate(ctx, out.data(), &outLen1, reinterpret_cast<const uint8_t *>(plaintext.data()),
-	                      static_cast<int>(plaintext.size())) == 1 &&
-	    EVP_EncryptFinal_ex(ctx, out.data() + outLen1, &outLen2) == 1;
+	const bool ok = EVP_EncryptInit_ex(ctx, EVP_aes_256_cbc(), nullptr, key.data(), iv) == 1 &&
+	                EVP_EncryptUpdate(ctx, out.data(), &outLen1, reinterpret_cast<const uint8_t *>(plaintext.data()),
+	                                  static_cast<int>(plaintext.size())) == 1 &&
+	                EVP_EncryptFinal_ex(ctx, out.data() + outLen1, &outLen2) == 1;
 
 	EVP_CIPHER_CTX_free(ctx);
 	if (!ok) {
@@ -145,8 +145,8 @@ bool decryptAesCbcHex(const std::string &cipherHex, const std::string &vectorHex
 	std::vector<uint8_t> key;
 	std::vector<uint8_t> cipher;
 	std::vector<uint8_t> iv;
-	if (!hexToBytes(sha256(phrase), key) || key.size() != 32 || !hexToBytes(cipherHex, cipher) || !hexToBytes(vectorHex, iv) ||
-	    iv.size() != 16) {
+	if (!hexToBytes(sha256(phrase), key) || key.size() != 32 || !hexToBytes(cipherHex, cipher) ||
+	    !hexToBytes(vectorHex, iv) || iv.size() != 16) {
 		return false;
 	}
 
@@ -592,7 +592,8 @@ bool VDONinjaSignaling::joinRoom(const std::string &roomId, const std::string &p
 
 	bool passwordDisabled = false;
 	std::string effectivePassword = resolveEffectivePassword(password, defaultPassword_, passwordDisabled);
-	std::string hashedRoom = passwordDisabled ? hashRoomId(roomId, "", salt_) : hashRoomId(roomId, effectivePassword, salt_);
+	std::string hashedRoom =
+	    passwordDisabled ? hashRoomId(roomId, "", salt_) : hashRoomId(roomId, effectivePassword, salt_);
 
 	currentRoom_.roomId = roomId;
 	currentRoom_.hashedRoomId = hashedRoom;
@@ -644,7 +645,8 @@ bool VDONinjaSignaling::publishStream(const std::string &streamId, const std::st
 
 	bool passwordDisabled = false;
 	std::string effectivePassword = resolveEffectivePassword(password, defaultPassword_, passwordDisabled);
-	std::string hashedStream = passwordDisabled ? sanitizeStreamId(streamId) : hashStreamId(streamId, effectivePassword, salt_);
+	std::string hashedStream =
+	    passwordDisabled ? sanitizeStreamId(streamId) : hashStreamId(streamId, effectivePassword, salt_);
 
 	publishedStream_.streamId = streamId;
 	publishedStream_.hashedStreamId = hashedStream;
@@ -698,7 +700,8 @@ bool VDONinjaSignaling::viewStream(const std::string &streamId, const std::strin
 
 	bool passwordDisabled = false;
 	std::string effectivePassword = resolveEffectivePassword(password, defaultPassword_, passwordDisabled);
-	std::string hashedStream = passwordDisabled ? sanitizeStreamId(streamId) : hashStreamId(streamId, effectivePassword, salt_);
+	std::string hashedStream =
+	    passwordDisabled ? sanitizeStreamId(streamId) : hashStreamId(streamId, effectivePassword, salt_);
 
 	StreamInfo stream;
 	stream.streamId = streamId;

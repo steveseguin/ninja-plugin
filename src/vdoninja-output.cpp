@@ -5,10 +5,10 @@
 
 #include "vdoninja-output.h"
 
+#include <cstring>
+
 #include <util/dstr.h>
 #include <util/threading.h>
-
-#include <cstring>
 
 #include "vdoninja-utils.h"
 
@@ -123,11 +123,12 @@ static obs_properties_t *vdoninja_output_properties(void *)
 	                         advanced);
 
 	obs_properties_add_bool(props, "auto_inbound_enabled", tr("AutoInbound.Enabled", "Auto Manage Inbound Streams"));
-	obs_properties_add_text(props, "auto_inbound_room_id", tr("AutoInbound.RoomID", "Inbound Room ID"), OBS_TEXT_DEFAULT);
+	obs_properties_add_text(props, "auto_inbound_room_id", tr("AutoInbound.RoomID", "Inbound Room ID"),
+	                        OBS_TEXT_DEFAULT);
 	obs_properties_add_text(props, "auto_inbound_password", tr("AutoInbound.Password", "Inbound Room Password"),
 	                        OBS_TEXT_PASSWORD);
-	obs_properties_add_text(props, "auto_inbound_target_scene", tr("AutoInbound.TargetScene", "Target Scene (optional)"),
-	                        OBS_TEXT_DEFAULT);
+	obs_properties_add_text(props, "auto_inbound_target_scene",
+	                        tr("AutoInbound.TargetScene", "Target Scene (optional)"), OBS_TEXT_DEFAULT);
 	obs_properties_add_text(props, "auto_inbound_source_prefix", tr("AutoInbound.SourcePrefix", "Source Prefix"),
 	                        OBS_TEXT_DEFAULT);
 	obs_properties_add_text(props, "auto_inbound_base_url", tr("AutoInbound.BaseUrl", "Base Playback URL"),
@@ -136,8 +137,7 @@ static obs_properties_t *vdoninja_output_properties(void *)
 	                        tr("AutoInbound.RemoveOnDisconnect", "Remove Source On Disconnect"));
 	obs_properties_add_bool(props, "auto_inbound_switch_scene",
 	                        tr("AutoInbound.SwitchScene", "Switch To Scene On New Stream"));
-	obs_properties_add_int(props, "auto_inbound_width", tr("AutoInbound.Width", "Inbound Source Width"), 320, 4096,
-	                       1);
+	obs_properties_add_int(props, "auto_inbound_width", tr("AutoInbound.Width", "Inbound Source Width"), 320, 4096, 1);
 	obs_properties_add_int(props, "auto_inbound_height", tr("AutoInbound.Height", "Inbound Source Height"), 240, 2160,
 	                       1);
 
@@ -318,8 +318,8 @@ void VDONinjaOutput::loadSettings(obs_data_t *settings)
 	settings_.autoInbound.baseUrl = getStringSetting("auto_inbound_base_url");
 	settings_.autoInbound.removeOnDisconnect = getBoolSetting("auto_inbound_remove_on_disconnect", true);
 	settings_.autoInbound.switchToSceneOnNewStream = getBoolSetting("auto_inbound_switch_scene", false);
-	settings_.autoInbound.layoutMode = static_cast<AutoLayoutMode>(getIntSetting(
-	    "auto_inbound_layout_mode", static_cast<int>(AutoLayoutMode::Grid)));
+	settings_.autoInbound.layoutMode =
+	    static_cast<AutoLayoutMode>(getIntSetting("auto_inbound_layout_mode", static_cast<int>(AutoLayoutMode::Grid)));
 	settings_.autoInbound.width = getIntSetting("auto_inbound_width", 1920);
 	settings_.autoInbound.height = getIntSetting("auto_inbound_height", 1080);
 
@@ -360,8 +360,9 @@ std::string VDONinjaOutput::buildInitialInfoMessage() const
 
 	obs_video_info videoInfo = {};
 	if (obs_get_video_info(&videoInfo)) {
-		const int fps = videoInfo.fps_den > 0 ? static_cast<int>((videoInfo.fps_num + (videoInfo.fps_den / 2)) / videoInfo.fps_den)
-		                                      : 0;
+		const int fps = videoInfo.fps_den > 0
+		                    ? static_cast<int>((videoInfo.fps_num + (videoInfo.fps_den / 2)) / videoInfo.fps_den)
+		                    : 0;
 		const int width = static_cast<int>(videoInfo.output_width ? videoInfo.output_width : videoInfo.base_width);
 		const int height = static_cast<int>(videoInfo.output_height ? videoInfo.output_height : videoInfo.base_height);
 		if (width > 0) {
@@ -530,9 +531,8 @@ void VDONinjaOutput::startThread()
 		logInfo("Viewer disconnected: %s (total: %d)", uuid.c_str(), peerManager_->getViewerCount());
 	});
 
-	peerManager_->setOnDataChannel([this](const std::string &uuid, std::shared_ptr<rtc::DataChannel>) {
-		sendInitialPeerInfo(uuid);
-	});
+	peerManager_->setOnDataChannel(
+	    [this](const std::string &uuid, std::shared_ptr<rtc::DataChannel>) { sendInitialPeerInfo(uuid); });
 
 	peerManager_->setOnDataChannelMessage([this](const std::string &uuid, const std::string &message) {
 		if (autoSceneManager_ && settings_.autoInbound.enabled) {

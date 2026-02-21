@@ -5,9 +5,9 @@
 
 #include "vdoninja-source.h"
 
-#include <util/threading.h>
-
 #include <cstring>
+
+#include <util/threading.h>
 
 namespace vdoninja
 {

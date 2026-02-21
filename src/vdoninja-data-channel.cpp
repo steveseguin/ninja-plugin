@@ -29,7 +29,8 @@ std::string firstNonEmptyValue(const JsonParser &json, const std::initializer_li
 
 bool looksLikeWhepUrl(const std::string &candidate)
 {
-	return candidate.rfind("https://", 0) == 0 || candidate.rfind("http://", 0) == 0 || candidate.rfind("whep:", 0) == 0;
+	return candidate.rfind("https://", 0) == 0 || candidate.rfind("http://", 0) == 0 ||
+	       candidate.rfind("whep:", 0) == 0;
 }
 
 std::string extractWhepUrlRecursive(const JsonParser &json, int depth)
@@ -38,7 +39,8 @@ std::string extractWhepUrlRecursive(const JsonParser &json, int depth)
 		return "";
 	}
 
-	std::string direct = firstNonEmptyValue(json, {"whepUrl", "whep", "whepplay", "whepPlay", "whepshare", "whepShare"});
+	std::string direct =
+	    firstNonEmptyValue(json, {"whepUrl", "whep", "whepplay", "whepPlay", "whepshare", "whepShare"});
 	if (looksLikeWhepUrl(direct)) {
 		return direct;
 	}
