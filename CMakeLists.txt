@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(obs-vdoninja VERSION 1.1.5 LANGUAGES C CXX)
+project(obs-vdoninja VERSION 1.1.6 LANGUAGES C CXX)
 
 # Plugin configuration
 set(PLUGIN_AUTHOR "VDO.Ninja Community")
@@ -274,26 +274,34 @@ if(BUILD_PLUGIN)
 
     # Link libdatachannel
     if(LibDataChannel_FOUND)
-        target_link_libraries(${PROJECT_NAME} PRIVATE LibDataChannel::LibDataChannel)
+        if(WIN32)
+            if(TARGET LibDataChannel::LibDataChannelStatic)
+                target_link_libraries(${PROJECT_NAME} PRIVATE LibDataChannel::LibDataChannelStatic)
+            else()
+                if(TARGET LibDataChannel::LibDataChannel)
+                    get_target_property(_ldc_defs LibDataChannel::LibDataChannel INTERFACE_COMPILE_DEFINITIONS)
+                    if(_ldc_defs)
+                        list(JOIN _ldc_defs ";" _ldc_defs_joined)
+                    else()
+                        set(_ldc_defs_joined "")
+                    endif()
+                    if(_ldc_defs_joined MATCHES "(^|;)RTC_STATIC($|;)")
+                        target_link_libraries(${PROJECT_NAME} PRIVATE LibDataChannel::LibDataChannel)
+                    else()
+                        message(FATAL_ERROR
+                            "Windows build resolved LibDataChannel::LibDataChannel without RTC_STATIC and without "
+                            "LibDataChannel::LibDataChannelStatic. This would import datachannel.dll at runtime.")
+                    endif()
+                else()
+                    message(FATAL_ERROR "LibDataChannel target missing")
+                endif()
+            endif()
+        else()
+            target_link_libraries(${PROJECT_NAME} PRIVATE LibDataChannel::LibDataChannel)
+        endif()
     else()
         target_include_directories(${PROJECT_NAME} PRIVATE ${LIBDATACHANNEL_INCLUDE_DIRS})
         target_link_libraries(${PROJECT_NAME} PRIVATE ${LIBDATACHANNEL_LIBRARIES})
-    endif()
-
-    # On Windows, dynamic libdatachannel can clash with OBS-bundled datachannel.dll at load time.
-    # Prefer RTC_STATIC builds to avoid module load failures due to missing imports.
-    if(WIN32 AND LibDataChannel_FOUND)
-        get_target_property(_ldc_defs LibDataChannel::LibDataChannel INTERFACE_COMPILE_DEFINITIONS)
-        if(_ldc_defs)
-            list(JOIN _ldc_defs ";" _ldc_defs_joined)
-        else()
-            set(_ldc_defs_joined "")
-        endif()
-        if(NOT _ldc_defs_joined MATCHES "(^|;)RTC_STATIC($|;)")
-            message(WARNING
-                "LibDataChannel target does not advertise RTC_STATIC. "
-                "Windows builds may import datachannel.dll and fail to load in OBS if ABI differs.")
-        endif()
     endif()
 
     # Link OBS libraries

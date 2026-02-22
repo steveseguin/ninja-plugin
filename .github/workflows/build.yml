@@ -403,6 +403,14 @@ jobs:
           git clone --depth 1 --branch v0.20.2 https://github.com/paullouisageneau/libdatachannel.git
           cd libdatachannel
           git submodule update --init --recursive --depth 1
+          # Upstream installs only the shared LibDataChannel target by default.
+          # Patch install export to include the static target as well.
+          $cmakeTxt = Get-Content CMakeLists.txt -Raw
+          $cmakeTxt = $cmakeTxt.Replace(
+            "install(TARGETS datachannel EXPORT LibDataChannelTargets",
+            "install(TARGETS datachannel datachannel-static EXPORT LibDataChannelTargets"
+          )
+          Set-Content CMakeLists.txt -Value $cmakeTxt
           cmake -B build -G Ninja `
             -DCMAKE_BUILD_TYPE=Release `
             -DCMAKE_INSTALL_PREFIX="${{ github.workspace }}\deps" `
@@ -414,8 +422,10 @@ jobs:
             "-DCMAKE_POLICY_VERSION_MINIMUM=3.5.0" `
             -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_INSTALLATION_ROOT\scripts\buildsystems\vcpkg.cmake" `
             -DVCPKG_TARGET_TRIPLET=x64-windows-static-md
-          cmake --build build
+          cmake --build build --target datachannel datachannel-static
           cmake --install build
+          Get-Content "${{ github.workspace }}\deps\lib\cmake\LibDataChannel\LibDataChannelTargets.cmake" | `
+            Select-String -Pattern "LibDataChannelStatic|datachannel-static|add_library"
 
       - name: Configure Plugin
         run: |
@@ -424,6 +434,7 @@ jobs:
             -DCMAKE_PREFIX_PATH="${{ github.workspace }}\deps;${{ github.workspace }}\obs-sdk" `
             -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_INSTALLATION_ROOT\scripts\buildsystems\vcpkg.cmake" `
             -DVCPKG_TARGET_TRIPLET=x64-windows-static-md `
+            -DLibDataChannel_DIR="${{ github.workspace }}\deps\lib\cmake\LibDataChannel" `
             -DOBS_SDK_PATH="${{ github.workspace }}\obs-sdk"
 
       - name: Build Plugin

@@ -13,6 +13,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - No unreleased changes yet.
 
+## [1.1.6] - 2026-02-22
+
+### Fixed
+- Windows CI now patches upstream libdatachannel install exports to include `datachannel-static`, builds that target explicitly, and points CMake at the patched package config.
+- Windows plugin linking now requires a static-safe libdatachannel target:
+  - prefers `LibDataChannel::LibDataChannelStatic` when available
+  - falls back to `LibDataChannel::LibDataChannel` only when it advertises `RTC_STATIC`
+  - fails configure otherwise (prevents accidental `datachannel.dll` runtime imports)
+- This resolves the failed import gate:
+  - `Unexpected dynamic runtime imports in obs-vdoninja.dll: datachannel.dll`
+
 ## [1.1.5] - 2026-02-22
 
 ### Fixed
