@@ -12,6 +12,13 @@ VDO.Ninja is a low-latency WebRTC platform used for live production, remote gues
 - `https://vdo.ninja/?push=YourStreamID`
 - `https://vdo.ninja/?view=YourStreamID`
 
+### Download, Install, and Use
+
+- Download latest build: [Releases](https://github.com/steveseguin/ninja-plugin/releases)
+- Install steps: [INSTALL.md](INSTALL.md)
+- First-run usage guide: [QUICKSTART.md](QUICKSTART.md)
+- Full docs: [README Quick Start](#quick-start)
+
 ## Why This Plugin Exists
 
 Using VDO.Ninja only through Browser Sources can be limiting for some production workflows. This plugin adds tighter OBS integration so users can:
