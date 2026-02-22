@@ -2,6 +2,8 @@
 
 This guide gets you from install to first working stream quickly.
 
+If you are starting from a release ZIP on Windows, run `install.cmd` first.
+
 ## 1) Confirm plugin loaded in OBS
 
 After installation, restart OBS and check:

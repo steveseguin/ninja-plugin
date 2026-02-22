@@ -1,6 +1,6 @@
 # OBS VDO.Ninja Plugin
 
-[![CI](https://github.com/steveseguin/ninja-plugin/actions/workflows/ci.yml/badge.svg)](https://github.com/steveseguin/ninja-plugin/actions/workflows/ci.yml)
+[![CI](https://github.com/steveseguin/ninja-obs-plugin/actions/workflows/ci.yml/badge.svg)](https://github.com/steveseguin/ninja-obs-plugin/actions/workflows/ci.yml)
 [![License: AGPL-3.0-only](https://img.shields.io/badge/License-AGPL--3.0--only-blue.svg)](LICENSE)
 
 Native OBS Studio plugin for [VDO.Ninja](https://vdo.ninja), with WebRTC publishing and ingest paths integrated directly into OBS workflows.
@@ -14,10 +14,11 @@ VDO.Ninja is a low-latency WebRTC platform used for live production, remote gues
 
 ### Download, Install, and Use
 
-- Download latest build: [Releases](https://github.com/steveseguin/ninja-plugin/releases)
+- Download latest build: [Releases](https://github.com/steveseguin/ninja-obs-plugin/releases)
 - Install steps: [INSTALL.md](INSTALL.md)
 - First-run usage guide: [QUICKSTART.md](QUICKSTART.md)
 - Full docs: [README Quick Start](#quick-start)
+- New Windows users: run `install.cmd` from the extracted ZIP (not `install.ps1`).
 
 ## Why This Plugin Exists
 
@@ -68,7 +69,7 @@ In practice, many teams use both: VDO.Ninja workflows for interactive contributi
 
 ### 1. Install
 
-Download the latest package from [Releases](https://github.com/steveseguin/ninja-plugin/releases).
+Download the latest package from [Releases](https://github.com/steveseguin/ninja-obs-plugin/releases).
 
 - Linux: `obs-vdoninja-linux-x86_64.tar.gz`
 - Windows: `obs-vdoninja-windows-x64.zip`

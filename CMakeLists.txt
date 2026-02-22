@@ -5,7 +5,7 @@ project(obs-vdoninja VERSION 1.1.2 LANGUAGES C CXX)
 # Plugin configuration
 set(PLUGIN_AUTHOR "VDO.Ninja Community")
 set(PLUGIN_WEBSITE "https://vdo.ninja")
-set(PLUGIN_SUPPORT_URL "https://github.com/steveseguin/ninja-plugin/issues")
+set(PLUGIN_SUPPORT_URL "https://github.com/steveseguin/ninja-obs-plugin/issues")
 set(PLUGIN_LICENSE "AGPL-3.0-only")
 
 # Options

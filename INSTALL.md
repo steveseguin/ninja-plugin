@@ -15,6 +15,8 @@ Every release archive includes `QUICKSTART.md` for first-run steps.
 .\install.cmd
 ```
 
+New-user default: use `install.cmd` first. It bypasses strict PowerShell script policy for this run only.
+
 Per-user install (no admin):
 
 ```powershell

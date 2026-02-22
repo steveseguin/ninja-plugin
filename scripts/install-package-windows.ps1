@@ -56,8 +56,11 @@ Next steps:
 3. Set Stream ID (and optional password/room)
 4. Start Streaming and open your view URL
 
-Quick guide: $quickStartPath
 "@
+
+if (Test-Path $quickStartPath) {
+    $nextSteps += "`nQuick guide: $quickStartPath`n"
+}
 
 Write-Host ""
 Write-Host $nextSteps
