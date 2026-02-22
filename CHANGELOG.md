@@ -8,6 +8,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- No unreleased changes yet.
+
+### Changed
+- No unreleased changes yet.
+
+## [1.1.3] - 2026-02-22
+
+### Added
+- Windows-friendly launcher wrappers included in release packages:
+  - `install.cmd` (calls `install.ps1` with process-local execution-policy bypass)
+  - `uninstall.cmd` (calls `uninstall.ps1` with process-local execution-policy bypass)
 - Release package UX improvements:
   - `install.ps1` / `install.sh` and new uninstall scripts (`uninstall.ps1` / `uninstall.sh`) included in artifacts
   - Expanded `INSTALL.md` with install, update, uninstall, and portable-path guidance
@@ -16,7 +27,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Optional nightly live internet e2e workflow: `.github/workflows/live-e2e.yml`
 
 ### Changed
-- README and GitHub Pages content clarified around install UX, trust model, and known limitations
+- README and GitHub Pages onboarding content now prioritizes first-time user install flow (`install.cmd` on Windows)
+- Project/release/docs links updated to `steveseguin/ninja-obs-plugin`
+- Plugin support URL metadata updated to the new repository issues URL
+- Windows installer output now omits stale quickstart path text when `QUICKSTART.md` is not present
+- Version bumped to `1.1.3`
+
+### Tested
+- Local package simulation on Windows:
+  - `install.cmd` successfully installed plugin/data into a test OBS root
+  - `uninstall.cmd -RemoveData` successfully removed plugin/data
+- GitHub Actions on `main` after installer/docs changes:
+  - `CI`, `Code Quality`, and `GitHub Pages` all passed
 
 ## [1.1.2] - 2026-02-21
 
