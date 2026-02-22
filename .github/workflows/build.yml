@@ -179,6 +179,7 @@ jobs:
           cmake --install build --prefix install
           cp LICENSE install/
           cp INSTALL.md install/
+          cp QUICKSTART.md install/
           cp THIRD_PARTY_LICENSES.md install/
           cp RELEASE_COMPLIANCE.md install/
           cp scripts/install-package-linux.sh install/install.sh
@@ -300,6 +301,7 @@ jobs:
           cmake --install build --prefix install
           cp LICENSE install/
           cp INSTALL.md install/
+          cp QUICKSTART.md install/
           cp THIRD_PARTY_LICENSES.md install/
           cp RELEASE_COMPLIANCE.md install/
           cp scripts/install-package-macos.sh install/install.sh
@@ -429,6 +431,7 @@ jobs:
           cmake --install build --prefix install
           Copy-Item LICENSE install\
           Copy-Item INSTALL.md install\
+          Copy-Item QUICKSTART.md install\
           Copy-Item THIRD_PARTY_LICENSES.md install\
           Copy-Item RELEASE_COMPLIANCE.md install\
           Copy-Item scripts\install-package-windows.ps1 install\install.ps1

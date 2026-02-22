@@ -70,6 +70,7 @@ Download the latest package from [Releases](https://github.com/steveseguin/ninja
 Each release archive includes:
 
 - `INSTALL.md` (quick install instructions)
+- `QUICKSTART.md` (first-run workflow)
 - `install.ps1` on Windows or `install.sh` on Linux/macOS
 - `uninstall.ps1` on Windows or `uninstall.sh` on Linux/macOS
 

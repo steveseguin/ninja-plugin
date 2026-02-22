@@ -46,5 +46,22 @@ mkdir -p "$DST_PLUGIN_DIR" "$DST_DATA_DIR"
 cp -a "$SRC_PLUGIN_DIR"/. "$DST_PLUGIN_DIR"/
 cp -a "$SRC_DATA_DIR"/. "$DST_DATA_DIR"/
 
+QUICKSTART_PATH="$PKG_ROOT/QUICKSTART.md"
 echo
-echo "Install complete. Restart OBS Studio."
+echo "Install complete."
+echo
+echo "Next steps:"
+echo "1. Restart OBS Studio"
+echo "2. Open Settings -> Stream and select VDO.Ninja"
+echo "3. Set Stream ID (and optional password/room)"
+echo "4. Start streaming and open your view URL"
+if [[ -f "$QUICKSTART_PATH" ]]; then
+  echo
+  echo "Quick guide: $QUICKSTART_PATH"
+  if [[ -t 0 && -t 1 ]]; then
+    read -r -p "Open QUICKSTART.md now? [Y/n] " RESP
+    if [[ ! "$RESP" =~ ^[Nn]$ ]] && command -v xdg-open >/dev/null 2>&1; then
+      xdg-open "$QUICKSTART_PATH" >/dev/null 2>&1 || true
+    fi
+  fi
+fi

@@ -1,6 +1,8 @@
 param(
     [switch]$CurrentUser,
-    [string]$ObsRoot = "$env:ProgramFiles\obs-studio"
+    [string]$ObsRoot = "$env:ProgramFiles\obs-studio",
+    [switch]$NoQuickStartPopup,
+    [switch]$OpenQuickStart
 )
 
 $ErrorActionPreference = "Stop"
@@ -43,5 +45,41 @@ New-Item -ItemType Directory -Force -Path $dstDataDir | Out-Null
 Copy-Item (Join-Path $srcPluginDir "*") $dstPluginDir -Recurse -Force
 Copy-Item (Join-Path $srcDataDir "*") $dstDataDir -Recurse -Force
 
+$quickStartPath = Join-Path $packageRoot "QUICKSTART.md"
+$nextSteps = @"
+
+Install complete.
+
+Next steps:
+1. Restart OBS Studio
+2. Open Settings -> Stream and select VDO.Ninja
+3. Set Stream ID (and optional password/room)
+4. Start Streaming and open your view URL
+
+Quick guide: $quickStartPath
+"@
+
 Write-Host ""
-Write-Host "Install complete. Restart OBS Studio."
+Write-Host $nextSteps
+
+if ($OpenQuickStart -and (Test-Path $quickStartPath)) {
+    Start-Process $quickStartPath
+}
+
+if ((-not $NoQuickStartPopup) -and (Test-Path $quickStartPath)) {
+    try {
+        Add-Type -AssemblyName System.Windows.Forms -ErrorAction Stop
+        $message = "OBS VDO.Ninja plugin installed.`n`nOpen QUICKSTART.md now?"
+        $result = [System.Windows.Forms.MessageBox]::Show(
+            $message,
+            "OBS VDO.Ninja Plugin",
+            [System.Windows.Forms.MessageBoxButtons]::YesNo,
+            [System.Windows.Forms.MessageBoxIcon]::Information
+        )
+        if ($result -eq [System.Windows.Forms.DialogResult]::Yes) {
+            Start-Process $quickStartPath
+        }
+    } catch {
+        # Non-interactive/headless shells may not support popup dialogs.
+    }
+}

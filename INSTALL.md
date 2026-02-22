@@ -1,6 +1,7 @@
 # OBS VDO.Ninja Plugin - Install / Update / Uninstall
 
 This package currently uses script-assisted file-copy install (no GUI installer yet).
+Every release archive includes `QUICKSTART.md` for first-run steps.
 
 ## Windows (`obs-vdoninja-windows-x64.zip`)
 
@@ -18,6 +19,12 @@ Per-user install (no admin):
 
 ```powershell
 .\install.ps1 -CurrentUser
+```
+
+Skip post-install quick-start popup:
+
+```powershell
+.\install.ps1 -NoQuickStartPopup
 ```
 
 Portable OBS path:
