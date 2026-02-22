@@ -1,0 +1,87 @@
+# OBS Manual Test Matrix
+
+Use this checklist on a real OBS install to validate plugin behavior beyond browser-only automation.
+
+## Preconditions
+
+- OBS restarted after plugin install
+- `Settings -> Stream` shows `VDO.Ninja` service
+- `Add Source` shows `VDO.Ninja Source`
+
+## Test 1: Direct View, Password
+
+1. Set stream settings:
+   - Stream ID: `manual-pass-01`
+   - Password: `somepassword`
+   - Room ID: empty
+2. Start streaming from OBS.
+3. Open viewer URL:
+   - `https://vdo.ninja/?view=manual-pass-01&password=somepassword`
+
+Pass criteria:
+- Video and audio play
+- Reloading viewer reconnects quickly
+- OBS stream remains stable
+
+## Test 2: Direct View, No Password
+
+1. Stream ID: `manual-open-01`
+2. Password: empty
+3. Start streaming
+4. Open:
+   - `https://vdo.ninja/?view=manual-open-01`
+
+Pass criteria:
+- Video/audio play
+- Reload survives without session break
+
+## Test 3: Room + Password
+
+1. Stream ID: `manual-room-01`
+2. Room ID: `manual-room-a`
+3. Password: `somepassword`
+4. Start streaming
+5. Open:
+   - `https://vdo.ninja/?view=manual-room-01&room=manual-room-a&scene&password=somepassword`
+
+Pass criteria:
+- Viewer joins and receives media
+- Scene/room refresh reconnects correctly
+
+## Test 4: Multi-Viewer Stability
+
+1. Keep one stream active from tests above.
+2. Open 2-3 viewer tabs/devices on same view URL.
+3. Let run for 10+ minutes.
+
+Pass criteria:
+- All viewers continue playing
+- No repeated reconnect loops
+- OBS CPU/network remains acceptable
+
+## Test 5: High Bitrate + Audio Quality
+
+1. Set higher OBS output bitrate (for example 10-15 Mbps).
+2. Publish to VDO.Ninja with active audio content.
+3. Monitor stats and subjective quality in viewer(s).
+
+Pass criteria:
+- Audio remains continuous (no frequent dropouts)
+- Video remains smooth enough for target FPS
+- Refresh reconnect still works
+
+## Test 6: Firefox Viewer
+
+1. Run any active stream from tests 1-3.
+2. Open view URL in Firefox.
+
+Pass criteria:
+- Audio/video present
+- Refresh reconnects
+
+## Capture for Regression Tracking
+
+- OBS log file
+- VDO.Ninja stats snapshot (codec, bitrate, packet loss, RTT)
+- Stream URL pattern used (room/password/no-password)
+- Approximate test duration and failure timestamp

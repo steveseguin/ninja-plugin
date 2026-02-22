@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Release package UX improvements:
+  - `install.ps1` / `install.sh` and new uninstall scripts (`uninstall.ps1` / `uninstall.sh`) included in artifacts
+  - Expanded `INSTALL.md` with install, update, uninstall, and portable-path guidance
+- `TESTING_OBS_MANUAL.md` for real OBS validation matrix
+- `SECURITY_AND_TRUST.md` for checksum/signing guidance
+- Optional nightly live internet e2e workflow: `.github/workflows/live-e2e.yml`
+
+### Changed
+- README and GitHub Pages content clarified around install UX, trust model, and known limitations
+
 ## [1.1.2] - 2026-02-21
 
 ### Added

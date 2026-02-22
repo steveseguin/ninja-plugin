@@ -182,7 +182,9 @@ jobs:
           cp THIRD_PARTY_LICENSES.md install/
           cp RELEASE_COMPLIANCE.md install/
           cp scripts/install-package-linux.sh install/install.sh
+          cp scripts/uninstall-package-linux.sh install/uninstall.sh
           chmod +x install/install.sh
+          chmod +x install/uninstall.sh
           cd install
           tar -czvf ../${{ env.PLUGIN_NAME }}-linux-x86_64.tar.gz .
 
@@ -301,7 +303,9 @@ jobs:
           cp THIRD_PARTY_LICENSES.md install/
           cp RELEASE_COMPLIANCE.md install/
           cp scripts/install-package-macos.sh install/install.sh
+          cp scripts/uninstall-package-macos.sh install/uninstall.sh
           chmod +x install/install.sh
+          chmod +x install/uninstall.sh
           cd install
           zip -r ../${{ env.PLUGIN_NAME }}-macos-${{ matrix.arch }}.zip .
 
@@ -428,6 +432,7 @@ jobs:
           Copy-Item THIRD_PARTY_LICENSES.md install\
           Copy-Item RELEASE_COMPLIANCE.md install\
           Copy-Item scripts\install-package-windows.ps1 install\install.ps1
+          Copy-Item scripts\uninstall-package-windows.ps1 install\uninstall.ps1
           7z a ${{ env.PLUGIN_NAME }}-windows-x64.zip .\install\*
 
       - name: Upload Artifact

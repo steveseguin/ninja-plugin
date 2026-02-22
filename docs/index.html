@@ -193,7 +193,7 @@
       <section class="card">
         <h2>How To Use (Quick Start)</h2>
         <ol>
-          <li>Install plugin binaries from the Releases page and restart OBS.</li>
+          <li>Download and extract the release package, then run <code>install.ps1</code> (Windows) or <code>install.sh</code> (Linux/macOS).</li>
           <li>In OBS, open <strong>Settings -> Stream</strong> and pick <strong>VDO.Ninja</strong>.</li>
           <li>Set <code>Stream ID</code> and optional <code>Password</code> / <code>Room ID</code>, then start streaming.</li>
           <li>Open your viewer URL: <code>https://vdo.ninja/?view=YourStreamID</code> (add password if set).</li>
@@ -227,11 +227,22 @@ View:    https://vdo.ninja/?view=MyStreamID&password=MyPass</code></pre>
         </ul>
       </section>
 
+      <section class="card split-6">
+        <h2>Install UX</h2>
+        <ul>
+          <li>Release archives include <code>INSTALL.md</code> with platform-specific steps.</li>
+          <li>Package includes install and uninstall scripts (<code>install.*</code> / <code>uninstall.*</code>).</li>
+          <li>Checksums are provided for release verification.</li>
+        </ul>
+      </section>
+
       <section class="card">
         <h2>Links</h2>
         <ul>
           <li><a href="https://github.com/steveseguin/ninja-plugin/releases">Releases</a></li>
+          <li><a href="https://github.com/steveseguin/ninja-plugin/blob/main/INSTALL.md">Install Guide</a></li>
           <li><a href="https://github.com/steveseguin/ninja-plugin/blob/main/README.md">Full Documentation</a></li>
+          <li><a href="https://github.com/steveseguin/ninja-plugin/blob/main/TESTING_OBS_MANUAL.md">Manual OBS Test Matrix</a></li>
           <li><a href="https://github.com/steveseguin/ninja-plugin/issues">Report Issues</a></li>
           <li><a href="https://vdo.ninja/">VDO.Ninja</a></li>
         </ul>

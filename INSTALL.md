@@ -1,54 +1,97 @@
-# OBS VDO.Ninja Plugin - Install Guide
+# OBS VDO.Ninja Plugin - Install / Update / Uninstall
 
-This package does not use a GUI installer yet. Install is file-copy based.
+This package currently uses script-assisted file-copy install (no GUI installer yet).
 
 ## Windows (`obs-vdoninja-windows-x64.zip`)
 
+### Install or update
+
 1. Extract the ZIP.
-2. Run PowerShell as Administrator in the extracted folder.
-3. Execute:
+2. Open PowerShell in the extracted folder.
+3. Run system-wide install (admin):
 
 ```powershell
 .\install.ps1
 ```
 
-Manual install (if you prefer):
+Per-user install (no admin):
 
-- Copy `obs-plugins\64bit\*` to `C:\Program Files\obs-studio\obs-plugins\64bit\`
-- Copy `data\obs-plugins\obs-vdoninja\*` to `C:\Program Files\obs-studio\data\obs-plugins\obs-vdoninja\`
+```powershell
+.\install.ps1 -CurrentUser
+```
+
+Portable OBS path:
+
+```powershell
+.\install.ps1 -ObsRoot "D:\OBS\obs-studio"
+```
+
+### Uninstall
+
+```powershell
+.\uninstall.ps1
+```
+
+Remove plugin + data:
+
+```powershell
+.\uninstall.ps1 -RemoveData
+```
 
 ## Linux (`obs-vdoninja-linux-x86_64.tar.gz`)
 
-1. Extract the archive.
-2. Run:
+### Install or update
 
 ```bash
+chmod +x install.sh
 sudo ./install.sh
 ```
 
-Manual install:
+### Uninstall
 
-- Copy `lib/obs-plugins/*` to `/usr/lib/obs-plugins/`
-- Copy `share/obs/obs-plugins/obs-vdoninja/*` to `/usr/share/obs/obs-plugins/obs-vdoninja/`
+```bash
+chmod +x uninstall.sh
+sudo ./uninstall.sh
+```
+
+Remove plugin + data:
+
+```bash
+sudo ./uninstall.sh --remove-data
+```
 
 ## macOS (`obs-vdoninja-macos-arm64.zip`)
 
-1. Extract the ZIP.
-2. Run:
+### Install or update
 
 ```bash
 chmod +x install.sh
 ./install.sh
 ```
 
-Manual install:
+### Uninstall
 
-- Copy plugin binaries from `lib/obs-plugins/` into your OBS plugin path.
-- Copy `share/obs/obs-plugins/obs-vdoninja/` into OBS plugin data path.
+```bash
+chmod +x uninstall.sh
+./uninstall.sh
+```
+
+Remove plugin + data:
+
+```bash
+./uninstall.sh --remove-data
+```
+
+## Manual install fallback
+
+If scripts are not usable:
+
+- Copy plugin binaries from `obs-plugins/64bit` or `lib/obs-plugins` into your OBS plugin binary path.
+- Copy `data/obs-plugins/obs-vdoninja` or `share/obs/obs-plugins/obs-vdoninja` into your OBS data path.
 
 ## Verify in OBS
 
-After install, restart OBS and confirm:
+After install/update, restart OBS and confirm:
 
-- Service `VDO.Ninja` appears in `Settings -> Stream`
-- Source `VDO.Ninja Source` appears in `Add Source`
+- `Settings -> Stream` includes `VDO.Ninja`
+- `Add Source` includes `VDO.Ninja Source`

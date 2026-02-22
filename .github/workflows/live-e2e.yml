@@ -1,0 +1,74 @@
+name: Live E2E (Nightly)
+
+on:
+  schedule:
+    - cron: "30 7 * * *"
+  workflow_dispatch:
+
+jobs:
+  live-e2e:
+    name: VDO.Ninja Live Matrix
+    runs-on: ubuntu-latest
+    timeout-minutes: 80
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps chromium firefox
+
+      - name: Scenario 1 - Default Password / No Room
+        env:
+          VDO_STREAM_ID: ci${{ github.run_id }}a
+          VDO_PASSWORD: somepassword
+        run: npm test
+
+      - name: Scenario 2 - Room + Password + High Bitrate
+        env:
+          VDO_STREAM_ID: ci${{ github.run_id }}b
+          VDO_PASSWORD: somepassword
+          VDO_ROOM_ID: room${{ github.run_id }}b
+          VDO_BITRATE: "12000"
+        run: |
+          npm run test:e2e:reload
+          npm run test:e2e:multi
+
+      - name: Scenario 3 - No Password
+        env:
+          VDO_STREAM_ID: ci${{ github.run_id }}c
+          VDO_NO_PASSWORD: "1"
+        run: npm test
+
+      - name: Scenario 4 - Firefox Viewer Room/Password
+        env:
+          VDO_STREAM_ID: ci${{ github.run_id }}d
+          VDO_PASSWORD: somepassword
+          VDO_ROOM_ID: room${{ github.run_id }}d
+          VDO_BITRATE: "10000"
+        run: npm run test:e2e:firefox-view
+
+      - name: Scenario 5 - Firefox Viewer No Password
+        env:
+          VDO_STREAM_ID: ci${{ github.run_id }}e
+          VDO_NO_PASSWORD: "1"
+        run: npm run test:e2e:firefox-view
+
+      - name: Upload Test Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: live-e2e-results-${{ github.run_id }}
+          path: |
+            test-results/
+            playwright-vdo-*.json
+            playwright-vdo-*.png
+          if-no-files-found: ignore

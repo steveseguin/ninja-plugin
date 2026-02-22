@@ -55,6 +55,7 @@ In practice, many teams use both: VDO.Ninja workflows for interactive contributi
 - Auto-inbound management can create/update Browser Sources from room/data-channel events.
 - Native decode in `VDO.Ninja Source` is available but still being hardened.
 - Locale fallback to built-in English strings is supported if locale files are missing.
+- Remote OBS control is not yet a fully hardened command surface.
 
 ## Quick Start
 
@@ -70,6 +71,7 @@ Each release archive includes:
 
 - `INSTALL.md` (quick install instructions)
 - `install.ps1` on Windows or `install.sh` on Linux/macOS
+- `uninstall.ps1` on Windows or `uninstall.sh` on Linux/macOS
 
 ### 2. Publish to VDO.Ninja
 
@@ -123,12 +125,23 @@ E2E covers:
 - Publish -> view playback validation
 - Viewer reload continuity
 - One publisher -> multiple concurrent viewers
+- Firefox receive validation (Chromium publisher -> Firefox viewer)
+
+Manual OBS test checklist:
+
+- [TESTING_OBS_MANUAL.md](TESTING_OBS_MANUAL.md)
 
 ## CI and Releases
 
 - `main` pushes run `CI`, `Code Quality`, and `GitHub Pages`.
 - Tag pushes matching `v*` run cross-platform build/release packaging.
 - Current release workflow auto-builds Linux x86_64, Windows x64, and macOS arm64.
+- Optional nightly live internet e2e matrix is in `.github/workflows/live-e2e.yml`.
+
+## Trust and Security
+
+- Releases include `checksums.txt` for SHA-256 verification.
+- See [SECURITY_AND_TRUST.md](SECURITY_AND_TRUST.md) for signing status and verification guidance.
 
 ## Project Layout
 
@@ -145,3 +158,4 @@ Licensed under **AGPL-3.0-only**.
 - [LICENSE](LICENSE)
 - [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md)
 - [RELEASE_COMPLIANCE.md](RELEASE_COMPLIANCE.md)
+- [SECURITY_AND_TRUST.md](SECURITY_AND_TRUST.md)
