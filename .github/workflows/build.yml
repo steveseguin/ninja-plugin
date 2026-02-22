@@ -491,22 +491,23 @@ jobs:
             -DLibDataChannel_DIR="${{ github.workspace }}\local-libdatachannel" `
             -DOBS_SDK_PATH="${{ github.workspace }}\obs-sdk"
 
-      - name: Verify LibDataChannel package source
+      - name: Verify local libdatachannel prefix
         run: |
           $cachePath = "build\CMakeCache.txt"
           if (-not (Test-Path $cachePath)) {
             throw "Missing CMake cache at $cachePath"
           }
 
-          $line = Select-String -Path $cachePath -Pattern '^LibDataChannel_DIR:PATH=' | Select-Object -First 1
+          $line = Select-String -Path $cachePath -Pattern '^CMAKE_PREFIX_PATH:[^=]*=' | Select-Object -First 1
           if (-not $line) {
-            throw "LibDataChannel_DIR was not resolved in CMake cache."
+            throw "CMAKE_PREFIX_PATH was not resolved in CMake cache."
           }
 
-          $resolvedDir = ($line.Line -split '=', 2)[1]
-          Write-Host "Resolved LibDataChannel_DIR: $resolvedDir"
-          if ($resolvedDir -notlike "*local-libdatachannel*") {
-            throw "Expected LibDataChannel_DIR to resolve to local-libdatachannel, got: $resolvedDir"
+          $resolvedPrefix = ($line.Line -split '=', 2)[1]
+          $normalizedPrefix = $resolvedPrefix.Replace('\', '/').ToLowerInvariant()
+          Write-Host "Resolved CMAKE_PREFIX_PATH: $resolvedPrefix"
+          if ($normalizedPrefix -notlike "*local-libdatachannel*") {
+            throw "Expected CMAKE_PREFIX_PATH to include local-libdatachannel, got: $resolvedPrefix"
           }
 
       - name: Build Plugin
